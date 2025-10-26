@@ -1,6 +1,5 @@
 package com.example.mindup.ui.components
 
-
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.google.android.gms.maps.model.CameraPosition
@@ -10,21 +9,20 @@ import com.google.maps.android.compose.*
 @Composable
 fun ProfileMapComponent(
     modifier: Modifier = Modifier,
-    interactive: Boolean = false // 👈 por defecto el mapa no roba el scroll
+    interactive: Boolean = false
 ) {
-    val upp = LatLng(20.35623, -99.02671) // 📍 Coordenadas de tu casa o ubicación
+    val upp = LatLng(20.35623, -99.02671)
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(upp, 15f)
     }
 
-    // Configuración de gestos del mapa
     val ui = if (interactive) {
         MapUiSettings(
             zoomControlsEnabled = false,
             compassEnabled = true
         )
     } else {
-        // 👇 Sin gestos, para que no interfiera con el scroll de la pantalla
+
         MapUiSettings(
             zoomControlsEnabled = false,
             compassEnabled = true,
@@ -35,7 +33,7 @@ fun ProfileMapComponent(
     }
 
     GoogleMap(
-        modifier = modifier, // el tamaño lo controla el contenedor padre
+        modifier = modifier,
         cameraPositionState = cameraPositionState,
         uiSettings = ui,
         properties = MapProperties(isMyLocationEnabled = false)
