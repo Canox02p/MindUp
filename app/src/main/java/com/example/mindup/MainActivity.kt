@@ -4,15 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.*
 import com.example.mindup.ui.screen.main.MainScreen
-
+import com.example.mindup.ui.screen.welcome.SplashVideoScreen
 import com.example.mindup.ui.theme.MindUpTheme
 
 class MainActivity : ComponentActivity() {
@@ -21,32 +17,21 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MindUpTheme {
-                MainScreen()
-                /*
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }*/
+                var showSplash by remember { mutableStateOf(true) }
+
+                Crossfade(
+                    targetState = showSplash,
+                    animationSpec = tween(durationMillis = 450) // fade entre screens
+                ) { isSplash ->
+                    if (isSplash) {
+                        SplashVideoScreen(onFinished = { showSplash = false })
+                    } else {
+                        MainScreen()
+                    }
+                }
             }
         }
     }
 }
-/*
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MindUpTheme {
-        Greeting("Android")
-    }
-}
- */
+
