@@ -3,34 +3,69 @@ package com.example.mindup.ui.screen.main
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.saveable.rememberSaveable
 import com.example.mindup.ui.components.buttons.navbar.NavItem
+import com.example.mindup.ui.screen.pages.FichaPage
 import com.example.mindup.ui.screen.pages.HomePage
 import com.example.mindup.ui.screen.pages.NotificationPage
 import com.example.mindup.ui.screen.pages.ProfileNav
-import com.example.mindup.ui.screen.pages.SettingsPage
+import com.example.mindup.ui.screen.pages.QuizPage
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(modifier: Modifier = Modifier) {
-
-    // Lista de elementos de navegación
+fun MainScreen(
+    modifier: Modifier = Modifier,
+    onLogout: () -> Unit = {} // <-- inyectamos la acción de cerrar sesión
+) {
     val navItemList = listOf(
         NavItem("Inicio", Icons.Default.Home),
-        NavItem("Notificacion", Icons.Default.Notifications),
-        NavItem("Ajustes", Icons.Default.Settings),
+        NavItem("Ficha", Icons.Default.Email),
+        NavItem("Quiz", Icons.Default.Search),
+        NavItem("Alerta", Icons.Default.Notifications),
         NavItem("Perfil", Icons.Default.Person),
     )
 
-    var selectedIndex by remember { mutableStateOf(0) }
+    var selectedIndex by rememberSaveable { mutableStateOf(0) }
+    var showLogoutConfirm by remember { mutableStateOf(false) }
+
+    if (showLogoutConfirm) {
+        AlertDialog(
+            onDismissRequest = { showLogoutConfirm = false },
+            title = { Text("Cerrar sesión") },
+            text = { Text("¿Seguro que deseas salir de tu cuenta?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showLogoutConfirm = false
+                    onLogout()
+                }) { Text("Sí, salir") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutConfirm = false }) { Text("Cancelar") }
+            }
+        )
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text(navItemList[selectedIndex].label) },
+                actions = {
+                    IconButton(onClick = { showLogoutConfirm = true }) {
+                        Icon(Icons.Default.ExitToApp, contentDescription = "Cerrar sesión")
+                    }
+                }
+            )
+        },
         bottomBar = {
             NavigationBar {
                 navItemList.forEachIndexed { index, navItem ->
@@ -55,8 +90,9 @@ fun MainScreen(modifier: Modifier = Modifier) {
 fun ContentScreen(modifier: Modifier = Modifier, selectedIndex: Int) {
     when (selectedIndex) {
         0 -> HomePage()
-        1 -> NotificationPage()
-        2 -> SettingsPage()
-        3 -> ProfileNav(modifier)
+        1 -> FichaPage()
+        2 -> QuizPage()
+        3 -> NotificationPage()
+        4 -> ProfileNav(modifier)
     }
 }

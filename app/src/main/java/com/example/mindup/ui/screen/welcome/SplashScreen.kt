@@ -26,49 +26,27 @@ fun SplashScreen(onFinished: () -> Unit) {
     val scale = remember { Animatable(0.8f) }
 
     LaunchedEffect(Unit) {
-        // FADE IN
+        // Fade-in
         alpha.animateTo(
             targetValue = 1f,
-            animationSpec = tween(
-                durationMillis = 900,
-                easing = FastOutSlowInEasing
-            )
+            animationSpec = tween(durationMillis = 700, easing = FastOutSlowInEasing)
         )
-        // Bounce: 0.8 -> 1.05 -> 1.0
+        // Bounce suave: 0.8 -> 1.05 -> 1.0
         scale.animateTo(
             targetValue = 1.05f,
-            animationSpec = tween(
-                durationMillis = 300,
-                easing = FastOutSlowInEasing
-            )
+            animationSpec = tween(durationMillis = 450, easing = FastOutSlowInEasing)
         )
         scale.animateTo(
-            targetValue = 1.0f,
-            animationSpec = tween(
-                durationMillis = 250,
-                easing = FastOutSlowInEasing
-            )
+            targetValue = 1.00f,
+            animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
         )
-
-        // Hold un momento
-        delay(550)
-
-        // FADE OUT + pequeño shrink
-        scale.animateTo(
-            targetValue = 0.95f,
-            animationSpec = tween(
-                durationMillis = 300,
-                easing = FastOutSlowInEasing
-            )
-        )
+        // Hold
+        delay(500)
+        // Fade-out
         alpha.animateTo(
             targetValue = 0f,
-            animationSpec = tween(
-                durationMillis = 500,
-                easing = FastOutSlowInEasing
-            )
+            animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing)
         )
-
         onFinished()
     }
 
@@ -79,13 +57,12 @@ fun SplashScreen(onFinished: () -> Unit) {
         contentAlignment = Alignment.Center
     ) {
         Image(
-            painter = painterResource(id = R.drawable.logo_mindup), // cambia si tu nombre es otro
-            contentDescription = "Logo MindUp",
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "Logo",
             modifier = Modifier
-                .size(180.dp)
+                .size(160.dp)
                 .scale(scale.value)
                 .alpha(alpha.value)
         )
     }
 }
-

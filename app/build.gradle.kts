@@ -47,10 +47,22 @@ android {
 }
 
 dependencies {
-    //--- Videos ---
-    implementation("androidx.media3:media3-exoplayer:1.4.1")
-    implementation("androidx.media3:media3-ui:1.4.1")
+    // --- Compose BOM (solo una vez) ---
+    implementation(platform(libs.androidx.compose.bom))
 
+    // --- Dependencias base de Compose ---
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material3)
+
+    // --- Extensiones de texto (KeyboardOptions, ImeAction, etc.) ---
+    implementation("androidx.compose.ui:ui-text")
+
+    // --- Íconos Material (Visibility / VisibilityOff / más) ---
+    implementation("androidx.compose.material:material-icons-extended")
 
     // --- Navegación y ViewModel ---
     implementation("androidx.navigation:navigation-compose:2.8.3")
@@ -60,20 +72,13 @@ dependencies {
     // --- DataStore Preferences ---
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
-    // --- Google Maps Compose (versión correcta y estable) ---
+    // --- Google Maps Compose ---
     implementation("com.google.maps.android:maps-compose:2.11.4")
-
-    // --- Play Services Maps ---
     implementation("com.google.android.gms:play-services-maps:18.2.0")
 
-    // --- Dependencias base de Compose ---
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
+    // --- Media3 (videos o reproductor) ---
+    implementation("androidx.media3:media3-exoplayer:1.4.1")
+    implementation("androidx.media3:media3-ui:1.4.1")
 
     // --- Testing ---
     testImplementation(libs.junit)
@@ -82,6 +87,7 @@ dependencies {
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
 
+    // --- Debug (herramientas de Compose) ---
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
