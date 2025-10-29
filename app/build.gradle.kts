@@ -48,6 +48,7 @@ android {
 
 dependencies {
     // --- Compose BOM (solo una vez) ---
+
     implementation(platform(libs.androidx.compose.bom))
 
     // --- Dependencias base de Compose ---
@@ -60,6 +61,9 @@ dependencies {
 
     // --- Extensiones de texto (KeyboardOptions, ImeAction, etc.) ---
     implementation("androidx.compose.ui:ui-text")
+
+    implementation("androidx.compose.foundation:foundation")
+
 
     // --- Íconos Material (Visibility / VisibilityOff / más) ---
     implementation("androidx.compose.material:material-icons-extended")

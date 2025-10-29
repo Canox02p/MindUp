@@ -18,6 +18,9 @@ import com.example.mindup.ui.screen.login.LoginScreen
 import com.example.mindup.ui.screen.login.LoginViewModel
 import com.example.mindup.ui.screen.main.MainScreen
 import com.example.mindup.ui.screen.welcome.SplashVideoScreen
+import com.example.mindup.ui.screen.register.RegisterScreen
+import com.example.mindup.ui.screen.register.RegisterViewModel
+import com.example.mindup.ui.screen.recover.RecoverScreen
 import kotlinx.coroutines.launch
 
 @Composable
@@ -25,10 +28,10 @@ fun NavGraph() {
     val navController = rememberNavController()
     val context = LocalContext.current
     val prefs = remember { UserPrefs(context) }
-    val repo = remember { UserRepository() }
+    val repo = remember { UserRepository(prefs) } // si tu repo requiere prefs: UserRepository(prefs)
     val scope = rememberCoroutineScope()
 
-    // ViewModel de Login
+    // --- ViewModel de Login ---
     val loginVm: LoginViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -38,48 +41,97 @@ fun NavGraph() {
         }
     )
 
-    // Observa el estado de sesión para decidir desde el Splash
+    // --- ViewModel de Registro ---
+    val registerVm: RegisterViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return RegisterViewModel(repo) as T
+            }
+        }
+    )
+
+    // Estado para decidir auto-login desde Splash (si quieres mantenerlo)
     val logged by prefs.isLoggedIn.collectAsState(initial = false)
 
     NavHost(
         navController = navController,
         startDestination = "splash"
     ) {
-        // SPLASH: decide adónde ir cuando termina la animación
+        // 🔹 SPLASH (video): decide login o main
         composable("splash") {
             SplashVideoScreen {
                 navController.navigate(if (logged) "main" else "login") {
-                    popUpTo("splash") { inclusive = true }
+                    popUpTo(0)            // limpia TODO el back stack
                     launchSingleTop = true
                 }
             }
         }
-        
-        // LOGIN: al autenticar, navega a MAIN (y limpia back stack)
+
+        // 🔹 LOGIN
         composable("login") {
             LoginScreen(
                 viewModel = loginVm,
                 onLoginOk = {
                     navController.navigate("main") {
-                        popUpTo("login") { inclusive = true }
+                        popUpTo(0)
+                        launchSingleTop = true
+                    }
+                },
+                onGoRegister = {
+                    navController.navigate("register") {
+                        launchSingleTop = true
+                    }
+                },
+                onForgotPassword = {
+                    navController.navigate("recover") {
                         launchSingleTop = true
                     }
                 }
             )
         }
 
-        // MAIN: permite cerrar sesión y regresa a LOGIN
-        composable("main") {
-            val scope = rememberCoroutineScope()
-
-            MainScreen(
-                onLogout = {
-                    // 1) Navega primero (limpia el back stack de una vez)
-                    navController.navigate("login") {
-                        popUpTo(0)      // limpia TODO el back stack
+        // 🔹 REGISTRO (azul cielo) — sobrescribe cuenta si ya existe
+        composable("register") {
+            RegisterScreen(
+                vm = registerVm,
+                onRegisteredOk = {
+                    // Al registrar, entra directo al main
+                    navController.navigate("main") {
+                        popUpTo(0)
                         launchSingleTop = true
                     }
-                    // 2) Borra el flag en segundo plano
+                },
+                onBackToLogin = {
+                    navController.popBackStack() // regresar al login
+                }
+            )
+        }
+
+        // 🔹 RECUPERAR CONTRASEÑA
+        composable("recover") {
+            RecoverScreen(
+                repo = repo,
+                onRecovered = {
+                    // al actualizar contraseña, vuelve al login
+                    navController.popBackStack()
+                },
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // 🔹 MAIN (con logout funcional)
+        composable("main") {
+            MainScreen(
+                onLogout = {
+                    // 1) Navega primero (para evitar carreras con IO)
+                    navController.navigate("login") {
+                        popUpTo(0)
+                        launchSingleTop = true
+                    }
+                    // 2) Limpia sesión en segundo plano
                     scope.launch { prefs.setLoggedIn(false) }
                 }
             )

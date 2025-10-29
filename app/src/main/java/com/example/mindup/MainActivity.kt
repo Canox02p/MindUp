@@ -13,7 +13,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MindUpTheme {
-                // 👇 Usa el NavHost (NavGraph) para manejar TODO el flujo
                 ScreenContainer()
             }
         }

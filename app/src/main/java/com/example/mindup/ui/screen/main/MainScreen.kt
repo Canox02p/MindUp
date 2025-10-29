@@ -26,7 +26,7 @@ import com.example.mindup.ui.screen.pages.QuizPage
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
-    onLogout: () -> Unit = {}   // <- ¡IMPORTANTE! lo recibimos desde el NavGraph
+    onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
 

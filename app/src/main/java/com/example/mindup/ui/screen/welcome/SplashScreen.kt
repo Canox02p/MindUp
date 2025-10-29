@@ -57,7 +57,7 @@ fun SplashScreen(onFinished: () -> Unit) {
         contentAlignment = Alignment.Center
     ) {
         Image(
-            painter = painterResource(id = R.drawable.logo),
+            painter = painterResource(id = R.drawable.logo_mindup),
             contentDescription = "Logo",
             modifier = Modifier
                 .size(160.dp)

@@ -1,42 +1,24 @@
 package com.example.mindup.ui.screen.login
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+
+private val SkyBlue = Color(0xFF87CEEB) // azul cielo
 
 @Composable
 fun LoginScreen(
@@ -52,17 +34,24 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(SkyBlue.copy(alpha = 0.15f)) // fondo azul muy suave
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
-            // ⬇ fillMaxWidth usa Float; para limitar ancho usa widthIn con Dp
             modifier = Modifier
                 .fillMaxWidth()
-                .widthIn(max = 360.dp),
+                .widthIn(max = 360.dp)
+                .background(Color.White, shape = MaterialTheme.shapes.large)
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Iniciar sesión", style = MaterialTheme.typography.headlineSmall)
+            Text(
+                "Iniciar sesión",
+                style = MaterialTheme.typography.headlineSmall,
+                color = SkyBlue
+            )
+
             Spacer(Modifier.height(24.dp))
 
             OutlinedTextField(
@@ -71,7 +60,10 @@ fun LoginScreen(
                 label = { Text("Correo electrónico") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next)
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                )
             )
 
             Spacer(Modifier.height(12.dp))
@@ -91,7 +83,10 @@ fun LoginScreen(
                         )
                     }
                 },
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done)
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                )
             )
 
             Spacer(Modifier.height(4.dp))
@@ -103,12 +98,12 @@ fun LoginScreen(
                 TextButton(
                     onClick = { onForgotPassword?.invoke() },
                     enabled = onForgotPassword != null
-                ) { Text("¿Olvidaste tu contraseña?") }
+                ) { Text("¿Olvidaste tu contraseña?", color = SkyBlue) }
 
                 TextButton(
                     onClick = { onGoRegister?.invoke() },
                     enabled = onGoRegister != null
-                ) { Text("Crear cuenta") }
+                ) { Text("Crear cuenta", color = SkyBlue) }
             }
 
             Spacer(Modifier.height(12.dp))
@@ -119,7 +114,8 @@ fun LoginScreen(
                     viewModel.login(onLoginOk)
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !ui.isLoading && ui.email.isNotBlank() && ui.password.isNotBlank()
+                enabled = !ui.isLoading && ui.email.isNotBlank() && ui.password.isNotBlank(),
+                colors = ButtonDefaults.buttonColors(containerColor = SkyBlue)
             ) {
                 if (ui.isLoading) {
                     CircularProgressIndicator(
@@ -130,7 +126,7 @@ fun LoginScreen(
                     Spacer(Modifier.width(12.dp))
                     Text("Validando…")
                 } else {
-                    Text("Entrar")
+                    Text("Entrar", color = Color.White)
                 }
             }
 
@@ -141,3 +137,4 @@ fun LoginScreen(
         }
     }
 }
+
