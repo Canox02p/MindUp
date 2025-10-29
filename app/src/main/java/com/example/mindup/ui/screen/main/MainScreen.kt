@@ -49,9 +49,8 @@ fun MainScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showLogoutConfirm = false
-                    // Feedback rápido para verificar que sí entra
                     Toast.makeText(context, "Saliendo…", Toast.LENGTH_SHORT).show()
-                    onLogout() // <- AQUÍ se ejecuta la navegación al login
+                    onLogout()
                 }) {
                     Text("Sí, salir")
                 }

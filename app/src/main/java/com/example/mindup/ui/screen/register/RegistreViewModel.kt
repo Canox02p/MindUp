@@ -8,40 +8,70 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 data class RegisterUiState(
-    val alias: String = "",
+    val username: String = "",
     val email: String = "",
     val password: String = "",
+    val confirmPassword: String = "",
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val isValid: Boolean = false
 )
 
-class RegisterViewModel(private val repo: UserRepository) : ViewModel() {
+class RegisterViewModel(
+    private val repo: UserRepository
+) : ViewModel() {
 
     private val _ui = MutableStateFlow(RegisterUiState())
     val ui: StateFlow<RegisterUiState> = _ui
 
-    fun onAliasChange(v: String) { _ui.value = _ui.value.copy(alias = v, error = null) }
-    fun onEmailChange(v: String) { _ui.value = _ui.value.copy(email = v, error = null) }
-    fun onPasswordChange(v: String) { _ui.value = _ui.value.copy(password = v, error = null) }
+    private fun validate(
+        username: String = _ui.value.username,
+        email: String = _ui.value.email,
+        password: String = _ui.value.password,
+        confirmPassword: String = _ui.value.confirmPassword
+    ): Boolean {
+        val emailOk = email.contains("@") && email.contains(".")
+        val passOk = password.length >= 6
+        val match = password == confirmPassword
+        val userOk = username.isNotBlank()
+        return emailOk && passOk && match && userOk
+    }
+
+    fun onUsernameChange(v: String) {
+        val s = _ui.value.copy(username = v, error = null)
+        _ui.value = s.copy(isValid = validate(username = v))
+    }
+
+    fun onEmailChange(v: String) {
+        val s = _ui.value.copy(email = v, error = null)
+        _ui.value = s.copy(isValid = validate(email = v))
+    }
+
+    fun onPasswordChange(v: String) {
+        val s = _ui.value.copy(password = v, error = null)
+        _ui.value = s.copy(isValid = validate(password = v))
+    }
+
+    fun onConfirmPasswordChange(v: String) {
+        val s = _ui.value.copy(confirmPassword = v, error = null)
+        _ui.value = s.copy(isValid = validate(confirmPassword = v))
+    }
 
     fun register(onSuccess: () -> Unit) {
         val s = _ui.value
-        val valid = s.alias.isNotBlank() &&
-                s.email.contains("@") &&
-                s.password.length >= 6
-        if (!valid) {
-            _ui.value = s.copy(error = "Revisa alias, correo y contraseña (mín. 6)")
+        if (!s.isValid) {
+            _ui.value = s.copy(error = "Revisa usuario, correo y contraseñas (mín. 6 y coinciden)")
             return
         }
 
         viewModelScope.launch {
             _ui.value = s.copy(isLoading = true, error = null)
-            val r = repo.register(s.alias, s.email, s.password)
-            r.onSuccess {
+            val res = repo.register(alias = s.username, email = s.email, password = s.password)
+            res.onSuccess {
                 _ui.value = _ui.value.copy(isLoading = false)
                 onSuccess()
             }.onFailure {
-                _ui.value = _ui.value.copy(isLoading = false, error = it.message)
+                _ui.value = _ui.value.copy(isLoading = false, error = it.message ?: "Error al registrar")
             }
         }
     }

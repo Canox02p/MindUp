@@ -5,7 +5,6 @@ import kotlinx.coroutines.flow.first
 
 class UserRepository(private val prefs: UserPrefs) {
 
-    // Login local contra DataStore
     suspend fun login(email: String, password: String): Result<Unit> {
         val acc = prefs.account.first()
         return if (acc.email.equals(email.trim(), ignoreCase = true) &&
@@ -18,7 +17,6 @@ class UserRepository(private val prefs: UserPrefs) {
         }
     }
 
-    // Registrar (sobrescribe si ya había cuenta)
     suspend fun register(alias: String, email: String, password: String): Result<Unit> {
         if (alias.isBlank() || email.isBlank() || password.length < 6) {
             return Result.failure(IllegalArgumentException("Datos inválidos"))
@@ -28,7 +26,6 @@ class UserRepository(private val prefs: UserPrefs) {
         return Result.success(Unit)
     }
 
-    // Cambiar/reiniciar contraseña
     suspend fun recover(email: String, newPassword: String): Result<Unit> {
         val acc = prefs.account.first()
         if (!acc.email.equals(email.trim(), ignoreCase = true)) {
