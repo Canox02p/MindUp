@@ -17,7 +17,7 @@ import com.example.mindup.data.repository.UserRepository
 import com.example.mindup.ui.screen.login.LoginScreen
 import com.example.mindup.ui.screen.login.LoginViewModel
 import com.example.mindup.ui.screen.main.MainScreen
-import com.example.mindup.ui.screen.welcome.SplashScreen
+import com.example.mindup.ui.screen.welcome.SplashVideoScreen
 import kotlinx.coroutines.launch
 
 @Composable
@@ -47,14 +47,14 @@ fun NavGraph() {
     ) {
         // SPLASH: decide adónde ir cuando termina la animación
         composable("splash") {
-            SplashScreen {
+            SplashVideoScreen {
                 navController.navigate(if (logged) "main" else "login") {
                     popUpTo("splash") { inclusive = true }
                     launchSingleTop = true
                 }
             }
         }
-
+        
         // LOGIN: al autenticar, navega a MAIN (y limpia back stack)
         composable("login") {
             LoginScreen(
@@ -70,15 +70,17 @@ fun NavGraph() {
 
         // MAIN: permite cerrar sesión y regresa a LOGIN
         composable("main") {
+            val scope = rememberCoroutineScope()
+
             MainScreen(
                 onLogout = {
-                    scope.launch {
-                        prefs.setLoggedIn(false)
-                        navController.navigate("login") {
-                            popUpTo("main") { inclusive = true }
-                            launchSingleTop = true
-                        }
+                    // 1) Navega primero (limpia el back stack de una vez)
+                    navController.navigate("login") {
+                        popUpTo(0)      // limpia TODO el back stack
+                        launchSingleTop = true
                     }
+                    // 2) Borra el flag en segundo plano
+                    scope.launch { prefs.setLoggedIn(false) }
                 }
             )
         }

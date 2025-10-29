@@ -1,5 +1,6 @@
 package com.example.mindup.ui.screen.main
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -11,8 +12,9 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import com.example.mindup.ui.components.buttons.navbar.NavItem
 import com.example.mindup.ui.screen.pages.FichaPage
 import com.example.mindup.ui.screen.pages.HomePage
@@ -24,8 +26,10 @@ import com.example.mindup.ui.screen.pages.QuizPage
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
-    onLogout: () -> Unit = {} // <-- inyectamos la acción de cerrar sesión
+    onLogout: () -> Unit = {}   // <- ¡IMPORTANTE! lo recibimos desde el NavGraph
 ) {
+    val context = LocalContext.current
+
     val navItemList = listOf(
         NavItem("Inicio", Icons.Default.Home),
         NavItem("Ficha", Icons.Default.Email),
@@ -45,11 +49,17 @@ fun MainScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showLogoutConfirm = false
-                    onLogout()
-                }) { Text("Sí, salir") }
+                    // Feedback rápido para verificar que sí entra
+                    Toast.makeText(context, "Saliendo…", Toast.LENGTH_SHORT).show()
+                    onLogout() // <- AQUÍ se ejecuta la navegación al login
+                }) {
+                    Text("Sí, salir")
+                }
             },
             dismissButton = {
-                TextButton(onClick = { showLogoutConfirm = false }) { Text("Cancelar") }
+                TextButton(onClick = { showLogoutConfirm = false }) {
+                    Text("Cancelar")
+                }
             }
         )
     }
@@ -73,7 +83,7 @@ fun MainScreen(
                         selected = selectedIndex == index,
                         onClick = { selectedIndex = index },
                         icon = { Icon(navItem.icon, contentDescription = navItem.label) },
-                        label = { Text(text = navItem.label) }
+                        label = { Text(navItem.label) }
                     )
                 }
             }
@@ -87,7 +97,7 @@ fun MainScreen(
 }
 
 @Composable
-fun ContentScreen(modifier: Modifier = Modifier, selectedIndex: Int) {
+private fun ContentScreen(modifier: Modifier = Modifier, selectedIndex: Int) {
     when (selectedIndex) {
         0 -> HomePage()
         1 -> FichaPage()
