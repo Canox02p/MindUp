@@ -233,9 +233,7 @@ private fun NodeCard(
         }
     }
 }
-// ======================================
-// PARTE 3: Scroll y armado de la pantalla
-// ======================================
+
 @Composable
 fun HomePage(
     modifier: Modifier = Modifier,
@@ -265,13 +263,11 @@ fun HomePage(
 
             Spacer(Modifier.height(8.dp))
 
-            // Camino + Nodos
             RoadMapSection(
-                modifier = Modifier.height(660.dp), // alto visible del bloque
+                modifier = Modifier.height(660.dp),
                 onStartQuiz = onStartQuiz
             )
 
-            // Scroll extra abajo (tope para que no se corte)
             Spacer(Modifier.height(96.dp))
         }
     }
