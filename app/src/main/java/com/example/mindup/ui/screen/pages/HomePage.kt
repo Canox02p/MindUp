@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
-// ---- Paleta / modelos ----
+
 private val PageBg = Color(0xFFF6F9FF)
 private val CardBg = Color.White
 private val Navy   = Color(0xFF22264C)
@@ -34,9 +34,7 @@ private val Aqua   = Color(0xFF15D6DB)
 
 enum class ModuleState { LOCKED, AVAILABLE, DONE }
 data class Module(val id: Int, val state: ModuleState)
-// ==============================
-// PARTE 1: Indicadores + título
-// ==============================
+
 @Composable
 fun HomeTopBar(
     title: String = "Desarrollador Full-Stack",
@@ -91,7 +89,6 @@ fun RoadMapSection(
     modifier: Modifier = Modifier,
     onStartQuiz: (moduleId: Int) -> Unit = {}
 ) {
-    // Estado de módulos (puedes moverlo a un ViewModel luego)
     var modules by remember {
         mutableStateOf(
             listOf(
@@ -104,12 +101,10 @@ fun RoadMapSection(
         )
     }
 
-    // Medidas de contenedor y centros de cada nodo (coordenadas locales al contenedor)
     var containerOffsetInRoot by remember { mutableStateOf(Offset.Zero) }
     var containerSize by remember { mutableStateOf(IntSize.Zero) }
-    val centers = remember { mutableStateListOf<Offset>() } // se rellena dinámicamente
+    val centers = remember { mutableStateListOf<Offset>() }
 
-    // Helper para registrar centro de un nodo en orden
     fun registerCenter(index: Int, centerInRoot: Offset) {
         val local = centerInRoot - containerOffsetInRoot
         while (centers.size <= index) centers.add(Offset.Zero)
@@ -132,11 +127,11 @@ fun RoadMapSection(
     }
 
     val rowAlignments = listOf(
-        Arrangement.Center,   // nodo 0
-        Arrangement.End,      // nodo 1
-        Arrangement.Center,   // nodo 2
-        Arrangement.Start,    // nodo 3
-        Arrangement.Center    // nodo 4
+        Arrangement.Center,
+        Arrangement.End,
+        Arrangement.Center,
+        Arrangement.Start,
+        Arrangement.Center
     )
 
     Box(
@@ -151,7 +146,7 @@ fun RoadMapSection(
         Canvas(
             Modifier
                 .matchParentSize()
-                .height(640.dp) // alto del roadmap
+                .height(640.dp)
         ) {
             if (centers.size >= 2 && centers.all { it != Offset.Zero }) {
                 val path = Path()
@@ -181,7 +176,6 @@ fun RoadMapSection(
             }
         }
 
-        // --- 2.2 Column: NODOS INTERACTIVOS (miden y registran sus centros) ---
         Column(
             Modifier
                 .matchParentSize()
@@ -203,7 +197,6 @@ fun RoadMapSection(
     }
 }
 
-// Tarjeta del nodo: mide su centro y lo reporta
 @Composable
 private fun NodeCard(
     index: Int,
