@@ -85,11 +85,7 @@ private fun TopPill(icon: androidx.compose.ui.graphics.vector.ImageVector, value
         }
     }
 }
-// ======================================================
-// PARTE 2: Camino (Canvas + Path + cubicTo) + Nodos
-// - Dibuja una ruta curvada que conecta centros de nodos
-// - Los nodos son interactivos (clickable) y se desbloquean
-// ======================================================
+
 @Composable
 fun RoadMapSection(
     modifier: Modifier = Modifier,
@@ -120,15 +116,13 @@ fun RoadMapSection(
         centers[index] = local
     }
 
-    // Acción al tocar nodo
     fun tapNode(id: Int) {
         val idx = modules.indexOfFirst { it.id == id }
         if (idx == -1) return
         if (modules[idx].state != ModuleState.AVAILABLE) return
 
-        onStartQuiz(id) // navegación a Quiz (aquí solo llamamos el callback)
+        onStartQuiz(id)
 
-        // Simulación de completado → DONE y desbloquear siguiente
         val m = modules.toMutableList()
         m[idx] = m[idx].copy(state = ModuleState.DONE)
         if (idx + 1 < m.size && m[idx + 1].state == ModuleState.LOCKED) {
@@ -137,7 +131,6 @@ fun RoadMapSection(
         modules = m
     }
 
-    // Patrón de alineación (izq/centro/der) para que el camino “serpentee”
     val rowAlignments = listOf(
         Arrangement.Center,   // nodo 0
         Arrangement.End,      // nodo 1
@@ -146,7 +139,6 @@ fun RoadMapSection(
         Arrangement.Center    // nodo 4
     )
 
-    // Contenedor que permite superponer Canvas (ruta) y Column (nodos)
     Box(
         modifier
             .fillMaxWidth()
@@ -156,7 +148,6 @@ fun RoadMapSection(
                 containerSize = coords.size
             }
     ) {
-        // --- 2.1 Canvas: DIBUJA LA RUTA ENTRE CENTROS ---
         Canvas(
             Modifier
                 .matchParentSize()
@@ -164,18 +155,15 @@ fun RoadMapSection(
         ) {
             if (centers.size >= 2 && centers.all { it != Offset.Zero }) {
                 val path = Path()
-                // empezamos en el primer nodo
                 path.moveTo(centers[0].x, centers[0].y)
 
-                // conecta cada par con cubicTo
+
                 for (i in 0 until centers.lastIndex) {
                     val p0 = centers[i]
                     val p1 = centers[i + 1]
 
-                    // Control points: curvatura suave en el medio
                     val midY = (p0.y + p1.y) / 2f
 
-                    // Para dar efecto "S", desplazamos un poco en X alternando
                     val side = if (i % 2 == 0) 1f else -1f
                     val dx = size.width * 0.18f * side
 
@@ -185,7 +173,6 @@ fun RoadMapSection(
                     path.cubicTo(c1.x, c1.y, c2.x, c2.y, p1.x, p1.y)
                 }
 
-                // trazo principal turquesa
                 drawPath(
                     path = path,
                     color = Aqua,
