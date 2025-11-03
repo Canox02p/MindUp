@@ -59,7 +59,7 @@ fun MainScreen(
             3 -> NotificationPage()
             4 -> ProfileView(
                 modifier = modifier.padding(innerPadding),
-                onEdit = { /* navega a tu editor si quieres */ },
+                onEdit = { },
                 onLogout = onLogout
             )
         }
