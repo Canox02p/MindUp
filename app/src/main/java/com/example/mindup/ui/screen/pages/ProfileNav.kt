@@ -12,25 +12,14 @@ import com.example.mindup.ui.viewmodel.ProfileViewModel
 import com.example.mindup.ui.viewmodel.ProfileViewModelFactory
 
 @Composable
-fun ProfileNav(modifier: Modifier = Modifier) {
-    val app = LocalContext.current.applicationContext as Application
-    val vm: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(app))
-    val nav = rememberNavController()
-
-    NavHost(
-        navController = nav,
-        startDestination = "profile/view",
-        modifier = modifier
-    ) {
-        composable("profile/view") {
-            ProfileView(vm = vm, onEdit = { nav.navigate("profile/edit") })
-        }
-        composable("profile/edit") {
-            ProfileEditPage(
-                vm = vm,
-                onSaved = { nav.popBackStack() },
-                onCancel = { nav.popBackStack() }
-            )
-        }
-    }
+fun ProfileNav(
+    modifier: Modifier = Modifier,
+    onEdit: () -> Unit = {},
+    onLogout: () -> Unit = {}
+) {
+    ProfileView(
+        modifier = modifier,
+        onEdit = onEdit,
+        onLogout = onLogout
+    )
 }
