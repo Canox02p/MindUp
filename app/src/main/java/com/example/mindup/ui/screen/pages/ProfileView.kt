@@ -12,7 +12,8 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -31,13 +32,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mindup.R
 
-// ====== Paleta rápida / puedes ajustar a tu tema ======
-private val PageBg   = Color(0xFFEAF2FF)   // azul muy claro (fondo)
+// =================== COLORES ===================
+private val PageBg   = Color(0xFFEAF2FF)   // Fondo azul claro
 private val CardBg   = Color.White
-private val Navy     = Color(0xFF1E2746)   // títulos
-private val Muted    = Color(0xFF7E8CA0)   // texto secundario
-private val Primary  = Color(0xFF2F6BFF)   // acentos
+private val Navy     = Color(0xFF1E2746)   // Texto principal
+private val Muted    = Color(0xFF7E8CA0)   // Texto secundario
+private val Primary  = Color(0xFF2F6BFF)   // Azul acento
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileView(
     modifier: Modifier = Modifier,
@@ -60,7 +62,6 @@ fun ProfileView(
                     Text("MindUp", color = Navy, fontWeight = FontWeight.ExtraBold)
                 },
                 actions = {
-                    // Cambia por R.drawable.logo si lo tienes
                     Icon(
                         painter = painterResource(id = R.drawable.ic_launcher_foreground),
                         contentDescription = null,
@@ -81,7 +82,7 @@ fun ProfileView(
         ) {
             Spacer(Modifier.height(8.dp))
 
-            /* -------------------- PERFIL -------------------- */
+            // ---------------- PERFIL ----------------
             Surface(
                 modifier = Modifier
                     .padding(horizontal = 12.dp)
@@ -105,7 +106,6 @@ fun ProfileView(
                                 .padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Avatar simple
                             Image(
                                 painter = painterResource(R.drawable.ic_launcher_foreground),
                                 contentDescription = null,
@@ -136,7 +136,7 @@ fun ProfileView(
                 }
             }
 
-            /* -------------------- RESUMEN -------------------- */
+            // ---------------- RESUMEN ----------------
             SectionHeader("Resumen")
             Row(
                 Modifier
@@ -149,7 +149,7 @@ fun ProfileView(
                 SmallStatCard(title = "Fichas", value = cardsCount.toString(), modifier = Modifier.weight(1f))
             }
 
-            /* -------------------- INSIGNIAS -------------------- */
+            // ---------------- INSIGNIAS ----------------
             SectionHeader("Insignias", trailingArrow = true)
             Row(
                 Modifier
@@ -157,16 +157,16 @@ fun ProfileView(
                     .padding(horizontal = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                BadgeCard("Enero")
-                BadgeCard("Febrero")
-                BadgeCard("Marzo")
+                BadgeCard("Enero",  modifier = Modifier.weight(1f))
+                BadgeCard("Febrero",modifier = Modifier.weight(1f))
+                BadgeCard("Marzo",  modifier = Modifier.weight(1f))
             }
 
-            /* -------------------- LOGROS -------------------- */
+            // ---------------- LOGROS ----------------
             SectionHeader("Logros", trailingArrow = true)
             Spacer(Modifier.height(12.dp))
 
-            /* -------------------- CERRAR SESIÓN -------------------- */
+            // ---------------- BOTÓN CERRAR SESIÓN ----------------
             Button(
                 onClick = { showConfirm = true },
                 modifier = Modifier
@@ -186,11 +186,12 @@ fun ProfileView(
         }
     }
 
+    // ---------------- DIÁLOGO DE CONFIRMACIÓN ----------------
     if (showConfirm) {
         AlertDialog(
             onDismissRequest = { showConfirm = false },
             title = { Text("Cerrar sesión") },
-            text  = { Text("¿Seguro que deseas salir de tu cuenta?") },
+            text = { Text("¿Seguro que deseas salir de tu cuenta?") },
             confirmButton = {
                 TextButton(onClick = {
                     showConfirm = false
@@ -204,7 +205,7 @@ fun ProfileView(
     }
 }
 
-/* ================== Helpers visuales ================== */
+// ================== COMPONENTES REUTILIZABLES ==================
 
 @Composable
 private fun SectionHeader(text: String, trailingArrow: Boolean = false) {
@@ -249,10 +250,12 @@ private fun SmallStatCard(title: String, value: String, modifier: Modifier = Mod
 }
 
 @Composable
-private fun BadgeCard(month: String) {
+private fun BadgeCard(
+    month: String,
+    modifier: Modifier = Modifier
+) {
     Surface(
-        modifier = Modifier
-            .weight(1f)
+        modifier = modifier
             .height(72.dp),
         color = CardBg,
         shape = RoundedCornerShape(12.dp),
@@ -268,7 +271,7 @@ private fun BadgeCard(month: String) {
             Spacer(Modifier.width(8.dp))
             Column {
                 Text(month, color = Navy, fontWeight = FontWeight.SemiBold)
-                Divider(color = Color(0xFFE7ECF5))
+                HorizontalDivider(color = Color(0xFFE7ECF5))
             }
         }
     }
