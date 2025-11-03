@@ -253,7 +253,6 @@ fun HomePage(
         ) {
             Spacer(Modifier.height(8.dp))
 
-            // Banda del curso + % (simple)
             val done = remember { mutableStateOf(0) }
             val total = 5
             CourseBanner(
