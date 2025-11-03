@@ -252,7 +252,6 @@ fun HomePage(
                 .verticalScroll(scroll)
         ) {
             Spacer(Modifier.height(8.dp))
-
             val done = remember { mutableStateOf(0) }
             val total = 5
             CourseBanner(
