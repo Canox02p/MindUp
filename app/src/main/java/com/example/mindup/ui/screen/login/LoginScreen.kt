@@ -82,7 +82,7 @@ fun LoginScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp), // área que ocupa el logo
+                    .height(300.dp),
                 contentAlignment = Alignment.Center
             ) {
                 // --- Logo en grande ---
@@ -122,10 +122,10 @@ fun LoginScreen(
                 value = ui.email,
                 onValueChange = viewModel::onEmailChange,
                 leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFF6B7280)) },
-                label = { Text("USUARIO") },
+                label = { Text("usuario") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(54.dp),
+                    .height(64.dp),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
@@ -144,7 +144,7 @@ fun LoginScreen(
                 label = { Text("contraseña") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(54.dp),
+                    .height(64.dp),
                 singleLine = true,
                 visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {

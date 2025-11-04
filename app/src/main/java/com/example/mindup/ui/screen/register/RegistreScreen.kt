@@ -4,8 +4,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MailOutline
@@ -49,7 +51,9 @@ fun RegisterScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(PageBg)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .navigationBarsPadding()
+            .imePadding(),
         contentAlignment = Alignment.TopCenter
     ) {
         Column(
@@ -58,13 +62,13 @@ fun RegisterScreen(
                 .clip(RoundedCornerShape(28.dp))
                 .background(CardBg)
                 .padding(vertical = 24.dp, horizontal = 20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-
+            // ======= Encabezado =======
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // ===== Título flotante "MindUp" =====
                 Text(
                     buildAnnotatedString {
                         withStyle(
@@ -83,17 +87,19 @@ fun RegisterScreen(
                         ) { append("indUp") }
                     },
                     modifier = Modifier
-                        .offset(x = -110.dp, y = 40.dp)  //  x y
+                        .offset(x = -110.dp, y = 40.dp)
                         .zIndex(3f)
                 )
 
                 Spacer(Modifier.height(8.dp))
             }
 
+            // ======= Cuerpo principal =======
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .offset(y = pushDown)
+                    .padding(bottom = 32.dp)
             ) {
                 Spacer(Modifier.height(12.dp))
 
@@ -112,14 +118,15 @@ fun RegisterScreen(
 
                 Spacer(Modifier.height(16.dp))
 
+                // ======= Campo usuario =======
                 OutlinedTextField(
                     value = ui.username,
                     onValueChange = viewModel::onUsernameChange,
                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFF6B7280)) },
-                    label = { Text("User Name") },
+                    label = { Text("Nombre de usuario") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(54.dp),
+                        .defaultMinSize(minHeight = 64.dp),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text,
@@ -130,6 +137,7 @@ fun RegisterScreen(
 
                 Spacer(Modifier.height(12.dp))
 
+                // ======= Campo email =======
                 OutlinedTextField(
                     value = ui.email,
                     onValueChange = viewModel::onEmailChange,
@@ -137,7 +145,7 @@ fun RegisterScreen(
                     label = { Text("Email") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(54.dp),
+                        .defaultMinSize(minHeight = 64.dp),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Email,
@@ -148,6 +156,7 @@ fun RegisterScreen(
 
                 Spacer(Modifier.height(12.dp))
 
+                // ======= Campo password =======
                 OutlinedTextField(
                     value = ui.password,
                     onValueChange = viewModel::onPasswordChange,
@@ -155,7 +164,7 @@ fun RegisterScreen(
                     label = { Text("Password") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(54.dp),
+                        .defaultMinSize(minHeight = 64.dp),
                     singleLine = true,
                     visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
@@ -176,6 +185,7 @@ fun RegisterScreen(
 
                 Spacer(Modifier.height(12.dp))
 
+                // ======= Confirm password =======
                 OutlinedTextField(
                     value = ui.confirmPassword,
                     onValueChange = viewModel::onConfirmPasswordChange,
@@ -183,7 +193,7 @@ fun RegisterScreen(
                     label = { Text("Confirm Password") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(54.dp),
+                        .defaultMinSize(minHeight = 64.dp),
                     singleLine = true,
                     visualTransformation = if (showConfirmPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
@@ -202,8 +212,9 @@ fun RegisterScreen(
                     shape = RoundedCornerShape(12.dp)
                 )
 
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(20.dp))
 
+                // ======= Botón principal =======
                 Button(
                     onClick = { viewModel.register(onRegisterSuccess) },
                     enabled = ui.isValid && !ui.isLoading,
@@ -234,6 +245,7 @@ fun RegisterScreen(
 
                 Spacer(Modifier.height(16.dp))
 
+                // ======= Texto inferior =======
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                     val text = buildAnnotatedString {
                         withStyle(SpanStyle(color = Color(0xFF6B7280))) { append("¿Ya tienes una cuenta? ") }
@@ -243,13 +255,16 @@ fun RegisterScreen(
                 }
             }
         }
+
+        // ======= Logo superior derecho =======
         Image(
             painter = painterResource(R.drawable.ic_logo_mindup),
             contentDescription = "MindUp",
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(top = 8.dp, end = 0.dp)
-                .size(150.dp)
+                .size(70.dp)
+                .offset(y = 20.dp)
                 .zIndex(2f)
         )
     }
