@@ -18,7 +18,7 @@ fun ProfileEditPage(
             CenterAlignedTopAppBar(
                 title = { Text("Editar perfil") },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {  // 🔙 Regresa a ProfileView
+                    IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "Atrás"
@@ -35,7 +35,6 @@ fun ProfileEditPage(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // —— Contenido de edición (placeholders) ——
             OutlinedTextField(
                 value = "",
                 onValueChange = {},

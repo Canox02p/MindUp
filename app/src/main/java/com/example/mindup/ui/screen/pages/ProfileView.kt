@@ -22,12 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mindup.R
 
-// ======= Paleta (misma que UI) =======
-private val PageBg   = Color(0xFFEAF2FF)
-private val CardBg   = Color.White
-private val Navy     = Color(0xFF1B1F23)
-private val Muted    = Color(0xFF7E8CA0)
-private val Primary  = Color(0xFF2B9FD6)
+private val Muted = Color(0xFF7E8CA0)
+private val SoftBorder = Color(0xFFE7ECF5)
 
 @Composable
 fun ProfileView(
@@ -45,29 +41,29 @@ fun ProfileView(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(PageBg)
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
     ) {
         Spacer(Modifier.height(8.dp))
 
-        // ======== PERFIL ========
+        // ===== PERFIL =====
         ElevatedCard(
             modifier = Modifier
                 .padding(horizontal = 12.dp, vertical = 8.dp)
                 .fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.elevatedCardColors(
-                containerColor = CardBg,   // 🔁 Color.White
-                contentColor = Navy
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
             ),
             elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
         ) {
             Column(Modifier.padding(12.dp)) {
-                Text("Perfil", color = Primary, fontWeight = FontWeight.Bold)
+                MindUpTitle("Perfil", sizeSp = 18)
                 Spacer(Modifier.height(8.dp))
 
                 Surface(
-                    color = Color(0xFFF7F9FE),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
@@ -86,8 +82,16 @@ fun ProfileView(
                         )
                         Spacer(Modifier.width(10.dp))
                         Column(Modifier.weight(1f)) {
-                            Text(userName, color = Navy, fontWeight = FontWeight.SemiBold)
-                            Text("Racha: $streakDays días 🔥", color = Muted, fontSize = 12.sp)
+                            Text(
+                                userName,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                "Racha: $streakDays días ",
+                                color = Muted,
+                                fontSize = 12.sp
+                            )
                         }
                     }
                 }
@@ -99,19 +103,19 @@ fun ProfileView(
                     shape = RoundedCornerShape(24.dp),
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = Color.White,
-                        contentColor = Primary
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.primary
                     ),
-                    border = BorderStroke(1.dp, Color(0xFFE7ECF5))
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
-                    Icon(Icons.Default.Edit, contentDescription = null, tint = Primary)
+                    Icon(Icons.Default.Edit, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     Spacer(Modifier.width(6.dp))
                     Text("Editar")
                 }
             }
         }
 
-        // ======== RESUMEN ========
+        // ===== RESUMEN =====
         SectionHeader("Resumen")
         Row(
             Modifier
@@ -124,7 +128,7 @@ fun ProfileView(
             SmallStatCard(title = "Fichas", value = cardsCount.toString(), modifier = Modifier.weight(1f))
         }
 
-        // ======== INSIGNIAS ========
+        // ===== INSIGNIAS =====
         SectionHeader("Insignias", trailingArrow = true)
         Row(
             Modifier
@@ -132,16 +136,16 @@ fun ProfileView(
                 .padding(horizontal = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            BadgeCard("Enero",  modifier = Modifier.weight(1f))
-            BadgeCard("Febrero",modifier = Modifier.weight(1f))
-            BadgeCard("Marzo",  modifier = Modifier.weight(1f))
+            BadgeCard("Enero",  Modifier.weight(1f))
+            BadgeCard("Febrero",Modifier.weight(1f))
+            BadgeCard("Marzo",  Modifier.weight(1f))
         }
 
-        // ======== LOGROS ========
+        // ===== LOGROS =====
         SectionHeader("Logros", trailingArrow = true)
         Spacer(Modifier.height(12.dp))
 
-        // ======== CERRAR SESIÓN ========
+        // ===== CERRAR SESIÓN =====
         Button(
             onClick = { showConfirm = true },
             modifier = Modifier
@@ -166,10 +170,7 @@ fun ProfileView(
             title = { Text("Cerrar sesión") },
             text = { Text("¿Seguro que deseas salir de tu cuenta?") },
             confirmButton = {
-                TextButton(onClick = {
-                    showConfirm = false
-                    onLogout()
-                }) { Text("Sí, salir") }
+                TextButton(onClick = { showConfirm = false; onLogout() }) { Text("Sí, salir") }
             },
             dismissButton = {
                 TextButton(onClick = { showConfirm = false }) { Text("Cancelar") }
@@ -178,15 +179,13 @@ fun ProfileView(
     }
 }
 
-// ======= Reusables =======
-
 @Composable
 private fun SectionHeader(text: String, trailingArrow: Boolean = false) {
     Surface(
         modifier = Modifier
             .padding(horizontal = 12.dp, vertical = 10.dp)
             .fillMaxWidth(),
-        color = CardBg,
+        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(16.dp),
         shadowElevation = 0.dp
     ) {
@@ -196,7 +195,8 @@ private fun SectionHeader(text: String, trailingArrow: Boolean = false) {
                 .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text, color = Primary, fontWeight = FontWeight.ExtraBold, modifier = Modifier.weight(1f))
+            MindUpTitle(text, sizeSp = 18)
+            Spacer(Modifier.weight(1f))
             if (trailingArrow) Text("→", color = Muted, fontSize = 18.sp)
         }
     }
@@ -206,7 +206,7 @@ private fun SectionHeader(text: String, trailingArrow: Boolean = false) {
 private fun SmallStatCard(title: String, value: String, modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier.height(72.dp),
-        color = CardBg,
+        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(12.dp),
         shadowElevation = 2.dp
     ) {
@@ -215,7 +215,7 @@ private fun SmallStatCard(title: String, value: String, modifier: Modifier = Mod
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(value, color = Navy, fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
+            Text(value, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
             Spacer(Modifier.height(2.dp))
             Text(title, color = Muted, fontSize = 12.sp)
         }
@@ -226,7 +226,7 @@ private fun SmallStatCard(title: String, value: String, modifier: Modifier = Mod
 private fun BadgeCard(month: String, modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier.height(72.dp),
-        color = CardBg,
+        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(12.dp),
         shadowElevation = 2.dp
     ) {
@@ -236,11 +236,11 @@ private fun BadgeCard(month: String, modifier: Modifier = Modifier) {
                 .padding(horizontal = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("⭐", fontSize = 22.sp)
+            Text("", fontSize = 22.sp)
             Spacer(Modifier.width(8.dp))
             Column {
-                Text(month, color = Navy, fontWeight = FontWeight.SemiBold)
-                HorizontalDivider(color = Color(0xFFE7ECF5))
+                Text(month, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)
+                HorizontalDivider(color = SoftBorder)
             }
         }
     }

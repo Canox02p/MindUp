@@ -1,60 +1,41 @@
 package com.example.mindup.ui.screen.pages
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Paleta rápida
-private val PageBg = Color(0xFFF4F7FB)
-private val CardBg = Color.White
-private val Navy   = Color(0xFF1E2746)
-private val Muted  = Color(0xFF7E8CA0)
-private val Accent = Color(0xFF2EC5FF)
-private val ChipBg = Color(0xFFEFF7FF)
-private val ChipText = Color(0xFF167ABF)
+// Colores desde el Theme (usa MaterialTheme.colorScheme.*)
+private val Muted = Color(0xFF7E8CA0)
 private val SoftBorder = Color(0xFFE7ECF5)
+
 
 @Composable
 fun FichaPage() {
     Scaffold(
-        containerColor = PageBg,
-        contentWindowInsets = WindowInsets(0) // ✅ evita el hueco superior
+        containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0)
     ) { inner ->
         Column(
             Modifier
                 .fillMaxSize()
-                // ✅ ignoramos padding superior para eliminar espacio grande
-                .padding(
-                    PaddingValues(
-                        start = inner.calculateStartPadding(LayoutDirection.Ltr),
-                        end   = inner.calculateEndPadding(LayoutDirection.Ltr),
-                        bottom= inner.calculateBottomPadding()
-                    )
-                )
+                .padding(inner)
                 .verticalScroll(rememberScrollState())
         ) {
-            // --- Secciones ---
-
             // ===== Fichas de estudio =====
             SectionCard {
-                Text("Fichas de estudio", color = Navy, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
+                MindUpTitle("Fichas de estudio", sizeSp = 20)
                 Spacer(Modifier.height(6.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -68,22 +49,21 @@ fun FichaPage() {
                 Spacer(Modifier.height(12.dp))
 
                 Surface(
-                    color = CardBg,
+                    color = MaterialTheme.colorScheme.surface,
                     shape = RoundedCornerShape(16.dp),
-                    tonalElevation = 0.dp,
-                    shadowElevation = 0.dp,
-                    border = ButtonDefaults.outlinedButtonBorder.copy(width = 1.dp, brush = androidx.compose.ui.graphics.SolidColor(SoftBorder))
+                    border = BorderStroke(1.dp, SolidColor(SoftBorder)),
+                    shadowElevation = 0.dp
                 ) {
                     Column(Modifier.padding(14.dp)) {
-                        Text("¿Cuál es el área del círculo?", color = Navy, fontWeight = FontWeight.SemiBold)
+                        Text("¿Cuál es el área del círculo?", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)
                         Spacer(Modifier.height(2.dp))
                         Text("A = πr²", color = Muted, fontSize = 13.sp)
 
                         Spacer(Modifier.height(10.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            DifficultyChip(text = "Difícil")
-                            DifficultyChip(text = "Medio")
-                            DifficultyChip(text = "Fácil", selected = true)
+                            DifficultyChip("Difícil")
+                            DifficultyChip("Medio")
+                            DifficultyChip("Fácil", selected = true)
                         }
                     }
                 }
@@ -91,23 +71,23 @@ fun FichaPage() {
 
             // ===== Plan de estudio =====
             SectionCard {
-                Text("Plan de estudio", color = Navy, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
+                MindUpTitle("Plan de estudio", sizeSp = 18)
                 Spacer(Modifier.height(6.dp))
                 Text("Próximo examen: Química", color = Muted, fontSize = 14.sp)
                 Spacer(Modifier.height(10.dp))
-                TagPill(text = "Semana 3/6")
+                TagPill("Semana 3/6")
             }
 
             // ===== Progreso semanal =====
             SectionCard {
-                Text("Progreso semanal", color = Navy, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
+                MindUpTitle("Progreso semanal", sizeSp = 18)
                 Spacer(Modifier.height(10.dp))
                 WeeklyBars(values = listOf(4, 6, 5, 7, 3, 4, 6), max = 8)
             }
 
             // ===== Tareas =====
             SectionCard {
-                Text("Tareas", color = Navy, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
+                MindUpTitle("Tareas", sizeSp = 18)
                 Spacer(Modifier.height(10.dp))
 
                 var t1 by remember { mutableStateOf(false) }
@@ -118,7 +98,7 @@ fun FichaPage() {
                 TaskRow(checked = t2, onCheckedChange = { t2 = it }, text = "Completar prueba práctica")
 
                 Spacer(Modifier.height(12.dp))
-                Divider(color = SoftBorder)
+                HorizontalDivider(color = SoftBorder)
                 Spacer(Modifier.height(8.dp))
 
                 Row(
@@ -135,9 +115,6 @@ fun FichaPage() {
         }
     }
 }
-
-/* ---------- Helpers visuales ---------- */
-
 @Composable
 private fun SectionCard(content: @Composable ColumnScope.() -> Unit) {
     Surface(
@@ -145,7 +122,7 @@ private fun SectionCard(content: @Composable ColumnScope.() -> Unit) {
             .padding(horizontal = 12.dp, vertical = 8.dp)
             .fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
-        color = CardBg,
+        color = MaterialTheme.colorScheme.surface,
         shadowElevation = 2.dp
     ) {
         Column(Modifier.padding(14.dp), content = content)
@@ -156,12 +133,12 @@ private fun SectionCard(content: @Composable ColumnScope.() -> Unit) {
 private fun TagPill(text: String) {
     Surface(
         shape = RoundedCornerShape(50),
-        color = ChipBg,
+        color = Color(0xFFEFF7FF),
         shadowElevation = 0.dp
     ) {
         Text(
             text = text,
-            color = ChipText,
+            color = Color(0xFF167ABF),
             fontSize = 12.sp,
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
         )
@@ -171,7 +148,7 @@ private fun TagPill(text: String) {
 @Composable
 private fun DifficultyChip(text: String, selected: Boolean = false) {
     val bg = if (selected) Color(0xFFDBF4FF) else Color(0xFFF4F7FB)
-    val fg = if (selected) Color(0xFF007ACC) else Navy
+    val fg = if (selected) Color(0xFF007ACC) else MaterialTheme.colorScheme.onSurface
     Surface(
         color = bg,
         shape = RoundedCornerShape(10.dp),
@@ -235,7 +212,7 @@ private fun TaskRow(checked: Boolean, onCheckedChange: (Boolean) -> Unit, text: 
     ) {
         Checkbox(checked = checked, onCheckedChange = onCheckedChange)
         Spacer(Modifier.width(8.dp))
-        Text(text, color = Navy)
+        Text(text, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
@@ -243,6 +220,6 @@ private fun TaskRow(checked: Boolean, onCheckedChange: (Boolean) -> Unit, text: 
 private fun MetaText(prefix: String, value: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(prefix, color = Muted, fontSize = 12.sp)
-        Text(value, color = Navy, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+        Text(value, color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
     }
 }

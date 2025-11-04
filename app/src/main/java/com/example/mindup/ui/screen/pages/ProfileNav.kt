@@ -19,13 +19,12 @@ fun ProfileNav(
     ) {
         composable("profile/view") {
             ProfileView(
-                onEdit = { nav.navigate("profile/edit") }, // 👉 ir a editar
+                onEdit = { nav.navigate("profile/edit") },
                 onLogout = onLogout
             )
         }
 
         composable("profile/edit") {
-            // Si tu ProfileEditPage tiene firma distinta, ajusta aquí.
             ProfileEditPage(
                 onBack = { nav.popBackStack() }
             )

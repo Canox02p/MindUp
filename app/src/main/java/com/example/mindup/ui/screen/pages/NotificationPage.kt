@@ -3,17 +3,14 @@ package com.example.mindup.ui.screen.pages
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
@@ -21,17 +18,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 
-// Paleta rápida para consistencia
-private val PageBg = Color(0xFFF4F7FB)
-private val CardBg = Color.White
-private val Navy   = Color(0xFF1E2746)
-private val Muted  = Color(0xFF7E8CA0)
-private val PrimaryBlue = Color(0xFF2B9FD6)
+private val Muted = Color(0xFF7E8CA0)
 private val SoftBorder = Color(0xFFE7ECF5)
 
 data class Reminder(
     val id: String,
-    val title: String = "Recordatorios",
     val text: String,
     val minutes: Int = 5
 )
@@ -40,22 +31,25 @@ data class Reminder(
 fun NotificationPage(
     modifier: Modifier = Modifier,
     reminders: List<Reminder> = listOf(
-        Reminder("1", text = "Revisa tus fichas de Geometría", minutes = 5),
-        Reminder("2", text = "Revisa tus fichas de Geometría", minutes = 5),
+        Reminder("1", "Revisa tus fichas de Geometría", 5),
+        Reminder("2", "Revisa tus fichas de Biología", 15),
+        Reminder("3", "Revisa tus fichas de Física", 25),
+        Reminder("4", "Revisa tus fichas de Química", 35),
     ),
     onConfigure: (Reminder) -> Unit = {},
     onSnooze: (Reminder) -> Unit = {}
 ) {
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val GUTTER = 12.dp
 
     Scaffold(
-        containerColor = PageBg,
+        containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets(0),
         snackbarHost = { SnackbarHost(snackbar) }
     ) { inner ->
-        LazyColumn(
-            modifier
+        Column(
+            Modifier
                 .fillMaxSize()
                 .padding(
                     PaddingValues(
@@ -63,47 +57,36 @@ fun NotificationPage(
                         end   = inner.calculateEndPadding(LayoutDirection.Ltr),
                         bottom= inner.calculateBottomPadding()
                     )
-                ),
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            items(reminders, key = { it.id }) { r ->
-                ReminderCard(
-                    reminder = r,
-                    onSnooze = {
-                        onSnooze(r)
-                        scope.launch { snackbar.showSnackbar("Pospuesto 10 minutos") }
-                    },
-                    onConfigure = {
-                        onConfigure(r)
-                        scope.launch { snackbar.showSnackbar("Abrir configuración de recordatorios…") }
-                    }
                 )
-            }
-            item { Spacer(Modifier.height(8.dp)) }
-        }
-    }
-}
-
-/* TopBar opcional (no usado para evitar duplicado). Déjalo si luego lo quieres reutilizar. */
-@Composable
-private fun AlertsTopBar() {
-    Surface(color = Color(0xFFE9F1FF)) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("MindUp", color = Navy, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
-            Box(
+            Row(
                 Modifier
-                    .size(36.dp)
-                    .clip(CircleShape),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(start = GUTTER, end = GUTTER, top = 10.dp, bottom = 6.dp)
             ) {
-                Icon(Icons.Default.AccountCircle, null, tint = Muted, modifier = Modifier.size(32.dp))
+                MindUpTitle("Alertas", sizeSp = 26)
+            }
+
+            // --- Lista de recordatorios ---
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = GUTTER, vertical = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                items(reminders, key = { it.id }) { r ->
+                    ReminderCard(
+                        reminder = r,
+                        onSnooze = {
+                            onSnooze(r)
+                            scope.launch { snackbar.showSnackbar("Pospuesto 10 minutos") }
+                        },
+                        onConfigure = {
+                            onConfigure(r)
+                            scope.launch { snackbar.showSnackbar("Abrir configuración de recordatorios…") }
+                        }
+                    )
+                }
+                item { Spacer(Modifier.height(8.dp)) }
             }
         }
     }
@@ -116,7 +99,7 @@ private fun ReminderCard(
     onConfigure: () -> Unit
 ) {
     Surface(
-        color = CardBg,
+        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(18.dp),
         shadowElevation = 2.dp
     ) {
@@ -131,32 +114,34 @@ private fun ReminderCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    reminder.title,
-                    color = Navy,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 18.sp
-                )
-                Icon(
-                    Icons.Default.NotificationsActive,
-                    contentDescription = null,
-                    tint = PrimaryBlue
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.NotificationsActive,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        text = reminder.text,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp
+                    )
+                }
             }
 
             Spacer(Modifier.height(6.dp))
 
-            // Línea de “SRS / tiempo”
+            // Línea de tiempo
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     Icons.Default.AccessTime,
                     contentDescription = null,
-                    tint = PrimaryBlue,
-                    modifier = Modifier.size(18.dp)
+                    tint = MaterialTheme.colorScheme.primary
                 )
                 Spacer(Modifier.width(6.dp))
                 Text(
-                    "${reminder.text} (${reminder.minutes} min)",
+                    "${reminder.minutes} min",
                     color = Muted,
                     fontSize = 13.sp
                 )
@@ -172,26 +157,23 @@ private fun ReminderCard(
                 OutlinedButton(
                     onClick = onSnooze,
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Navy),
+                    colors = ButtonDefaults.outlinedButtonColors(),
                     border = ButtonDefaults.outlinedButtonBorder.copy(
                         width = 1.dp,
                         brush = androidx.compose.ui.graphics.SolidColor(SoftBorder)
                     ),
                     shape = RoundedCornerShape(10.dp)
-                ) {
-                    Text("Posponer")
-                }
+                ) { Text("Posponer") }
+
                 Button(
                     onClick = onConfigure,
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = PrimaryBlue,
+                        containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = Color.White
-                    )
-                ) {
-                    Text("Configurar", fontWeight = FontWeight.SemiBold)
-                }
+                    ),
+                    shape = RoundedCornerShape(10.dp)
+                ) { Text("Configurar", fontWeight = FontWeight.SemiBold) }
             }
         }
     }

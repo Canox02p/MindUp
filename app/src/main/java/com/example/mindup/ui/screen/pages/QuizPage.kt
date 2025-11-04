@@ -2,29 +2,20 @@ package com.example.mindup.ui.screen.pages
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
 import kotlinx.coroutines.launch
 
-// Paleta rápida alineada al resto
-private val PageBg = Color(0xFFF4F7FB)
-private val CardBg = Color.White
-private val Navy   = Color(0xFF1E2746)
-private val Muted  = Color(0xFF7E8CA0)
-private val PrimaryBlue = Color(0xFF2B9FD6)
+private val Muted = Color(0xFF7E8CA0)
 
 data class QuizOption(val id: Int, val text: String)
 data class QuizQuestion(
@@ -48,7 +39,7 @@ fun QuizPage(
     val snackbar = remember { SnackbarHostState() }
 
     Scaffold(
-        containerColor = PageBg,
+        containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets(0),
         snackbarHost = { SnackbarHost(snackbar) }
     ) { inner ->
@@ -69,7 +60,7 @@ fun QuizPage(
                 modifier = Modifier
                     .padding(horizontal = 12.dp, vertical = 12.dp)
                     .fillMaxWidth(),
-                color = CardBg,
+                color = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(18.dp),
                 shadowElevation = 2.dp
             ) {
@@ -78,13 +69,9 @@ fun QuizPage(
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
+                    // Título bicolor
+                    MindUpTitle(question.title, sizeSp = 22)
 
-                    Text(
-                        question.title,
-                        fontSize = 20.sp,
-                        color = Navy,
-                        fontWeight = FontWeight.ExtraBold
-                    )
                     Spacer(Modifier.height(6.dp))
                     Text(
                         question.prompt,
@@ -113,14 +100,16 @@ fun QuizPage(
                             }
                             val ok = selected == question.correctId
                             onResult(ok)
-                            scope.launch { snackbar.showSnackbar(if (ok) "¡Correcto!" else "Respuesta incorrecta") }
+                            scope.launch {
+                                snackbar.showSnackbar(if (ok) "¡Correcto!" else "Respuesta incorrecta")
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(44.dp),
                         shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = PrimaryBlue,
+                            containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = Color.White
                         )
                     ) {
@@ -157,33 +146,12 @@ private fun QuizRadio(
                 selected = selected,
                 onClick = onClick,
                 colors = RadioButtonDefaults.colors(
-                    selectedColor = PrimaryBlue,
+                    selectedColor = MaterialTheme.colorScheme.primary,
                     unselectedColor = Muted
                 )
             )
             Spacer(Modifier.width(6.dp))
-            Text(text, color = Navy)
-        }
-    }
-}
-
-@Composable
-private fun QuizTopBar() {
-    Surface(color = Color(0xFFE9F1FF)) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text("MindUp", color = Navy, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
-            Box(
-                Modifier.size(36.dp).clip(CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Default.AccountCircle, null, tint = Muted, modifier = Modifier.size(32.dp))
-            }
+            Text(text, color = MaterialTheme.colorScheme.onSurface)
         }
     }
 }
