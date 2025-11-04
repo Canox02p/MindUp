@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -34,17 +35,24 @@ private val SoftBorder = Color(0xFFE7ECF5)
 fun FichaPage() {
     Scaffold(
         containerColor = PageBg,
-        topBar = { FichaTopBar() }
+        contentWindowInsets = WindowInsets(0) // ✅ evita el hueco superior
     ) { inner ->
         Column(
             Modifier
                 .fillMaxSize()
-                .padding(inner)
+                // ✅ ignoramos padding superior para eliminar espacio grande
+                .padding(
+                    PaddingValues(
+                        start = inner.calculateStartPadding(LayoutDirection.Ltr),
+                        end   = inner.calculateEndPadding(LayoutDirection.Ltr),
+                        bottom= inner.calculateBottomPadding()
+                    )
+                )
                 .verticalScroll(rememberScrollState())
         ) {
-            Spacer(Modifier.height(8.dp))
+            // --- Secciones ---
 
-            // ===== Sección: Fichas de estudio =====
+            // ===== Fichas de estudio =====
             SectionCard {
                 Text("Fichas de estudio", color = Navy, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
                 Spacer(Modifier.height(6.dp))
@@ -59,7 +67,6 @@ fun FichaPage() {
 
                 Spacer(Modifier.height(12.dp))
 
-                // Tarjeta de pregunta
                 Surface(
                     color = CardBg,
                     shape = RoundedCornerShape(16.dp),
@@ -82,7 +89,7 @@ fun FichaPage() {
                 }
             }
 
-            // ===== Sección: Plan de estudio =====
+            // ===== Plan de estudio =====
             SectionCard {
                 Text("Plan de estudio", color = Navy, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
                 Spacer(Modifier.height(6.dp))
@@ -91,17 +98,14 @@ fun FichaPage() {
                 TagPill(text = "Semana 3/6")
             }
 
-            // ===== Sección: Progreso semanal =====
+            // ===== Progreso semanal =====
             SectionCard {
                 Text("Progreso semanal", color = Navy, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
                 Spacer(Modifier.height(10.dp))
-                WeeklyBars(
-                    values = listOf(4, 6, 5, 7, 3, 4, 6), // 0-7
-                    max = 8
-                )
+                WeeklyBars(values = listOf(4, 6, 5, 7, 3, 4, 6), max = 8)
             }
 
-            // ===== Sección: Tareas =====
+            // ===== Tareas =====
             SectionCard {
                 Text("Tareas", color = Navy, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
                 Spacer(Modifier.height(10.dp))
@@ -116,7 +120,7 @@ fun FichaPage() {
                 Spacer(Modifier.height(12.dp))
                 Divider(color = SoftBorder)
                 Spacer(Modifier.height(8.dp))
-                // Métricas
+
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -128,58 +132,6 @@ fun FichaPage() {
             }
 
             Spacer(Modifier.height(16.dp))
-        }
-    }
-}
-
-/* ---------- TopBar ---------- */
-
-@Composable
-private fun FichaTopBar() {
-    Surface(color = PageBg) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text("MindUp", color = Navy, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
-            // Circulito con check/onda (decorativo)
-            Box(
-                Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFEAF7FF)),
-                contentAlignment = Alignment.Center
-            ) {
-                Canvas(Modifier.size(28.dp)) {
-                    drawCircle(color = Accent, style = Stroke(width = 4f))
-                    // mini “check/onda”
-                    val w = size.width
-                    val h = size.height
-                    drawArc(
-                        color = Accent,
-                        startAngle = 200f,
-                        sweepAngle = 140f,
-                        useCenter = false,
-                        style = Stroke(width = 6f)
-                    )
-                }
-            }
-            // logo mini
-            Surface(
-                shape = CircleShape,
-                color = CardBg,
-                shadowElevation = 1.dp
-            ) {
-                Icon(
-                    Icons.Default.AccountCircle,
-                    contentDescription = null,
-                    tint = Muted,
-                    modifier = Modifier.size(36.dp).padding(2.dp)
-                )
-            }
         }
     }
 }
@@ -237,7 +189,6 @@ private fun DifficultyChip(text: String, selected: Boolean = false) {
 
 @Composable
 private fun WeeklyBars(values: List<Int>, max: Int) {
-    // Canvas simple con 7 barras redondeadas
     val barColor = Color(0xFFFFC94C)
     val baseline = SoftBorder
     Canvas(
@@ -249,11 +200,10 @@ private fun WeeklyBars(values: List<Int>, max: Int) {
         val w = size.width
         val h = size.height
         val bars = values.take(7)
-        val spacing = w / (bars.size * 2f + (bars.size - 1)) // ancho y separación balanceados
+        val spacing = w / (bars.size * 2f + (bars.size - 1))
         val barWidth = spacing
         val startX = spacing / 2f
 
-        // línea base sutil
         drawLine(
             color = baseline,
             start = androidx.compose.ui.geometry.Offset(0f, h - 8f),

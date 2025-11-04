@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
@@ -48,21 +49,25 @@ fun QuizPage(
 
     Scaffold(
         containerColor = PageBg,
-        topBar = { QuizTopBar() },
+        contentWindowInsets = WindowInsets(0),
         snackbarHost = { SnackbarHost(snackbar) }
     ) { inner ->
         Column(
             modifier
-                .padding(inner)
                 .fillMaxSize()
+                .padding(
+                    PaddingValues(
+                        start = inner.calculateStartPadding(LayoutDirection.Ltr),
+                        end   = inner.calculateEndPadding(LayoutDirection.Ltr),
+                        bottom= inner.calculateBottomPadding()
+                    )
+                )
                 .verticalScroll(rememberScrollState())
         ) {
-            Spacer(Modifier.height(12.dp))
-
             // Tarjeta principal del quiz
             Surface(
                 modifier = Modifier
-                    .padding(horizontal = 12.dp)
+                    .padding(horizontal = 12.dp, vertical = 12.dp)
                     .fillMaxWidth(),
                 color = CardBg,
                 shape = RoundedCornerShape(18.dp),
@@ -102,19 +107,17 @@ fun QuizPage(
 
                     Button(
                         onClick = {
+                            if (selected == null) {
+                                scope.launch { snackbar.showSnackbar("Selecciona una opción") }
+                                return@Button
+                            }
                             val ok = selected == question.correctId
                             onResult(ok)
-                            scope.launch {
-                                snackbar.showSnackbar(
-                                    if (selected == null) "Selecciona una opción"
-                                    else if (ok) "¡Correcto!" else "Respuesta incorrecta"
-                                )
-                            }
+                            scope.launch { snackbar.showSnackbar(if (ok) "¡Correcto!" else "Respuesta incorrecta") }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(44.dp),
-                        enabled = true,
                         shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = PrimaryBlue,
@@ -138,8 +141,7 @@ private fun QuizRadio(
     onClick: () -> Unit
 ) {
     Surface(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
         color = Color(0xFFF7F9FC),
         shadowElevation = 0.dp
@@ -175,18 +177,9 @@ private fun QuizTopBar() {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // “MindUp” a la izquierda
-            Text(
-                "MindUp",
-                color = Navy,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.ExtraBold
-            )
-            // “logo” derecho (placeholder)
+            Text("MindUp", color = Navy, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
             Box(
-                Modifier
-                    .size(36.dp)
-                    .clip(CircleShape),
+                Modifier.size(36.dp).clip(CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(Icons.Default.AccountCircle, null, tint = Muted, modifier = Modifier.size(32.dp))

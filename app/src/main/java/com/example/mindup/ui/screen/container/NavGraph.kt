@@ -66,6 +66,7 @@ fun NavGraph() {
             LoginScreen(
                 viewModel = loginVm,
                 onLoginOk = {
+                    scope.launch { prefs.setLoggedIn(true) }
                     navController.navigate("main") {
                         popUpTo(0)
                         launchSingleTop = true
@@ -80,6 +81,7 @@ fun NavGraph() {
             RegisterScreen(
                 viewModel = registerVm,
                 onRegisterSuccess = {
+                    scope.launch { prefs.setLoggedIn(true) }
                     navController.navigate("main") {
                         popUpTo(0)
                         launchSingleTop = true
@@ -110,4 +112,3 @@ fun NavGraph() {
         }
     }
 }
-

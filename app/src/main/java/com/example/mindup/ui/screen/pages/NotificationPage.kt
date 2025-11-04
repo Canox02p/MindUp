@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
@@ -50,13 +51,19 @@ fun NotificationPage(
 
     Scaffold(
         containerColor = PageBg,
-        topBar = { AlertsTopBar() },
+        contentWindowInsets = WindowInsets(0),
         snackbarHost = { SnackbarHost(snackbar) }
     ) { inner ->
         LazyColumn(
             modifier
-                .padding(inner)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .padding(
+                    PaddingValues(
+                        start = inner.calculateStartPadding(LayoutDirection.Ltr),
+                        end   = inner.calculateEndPadding(LayoutDirection.Ltr),
+                        bottom= inner.calculateBottomPadding()
+                    )
+                ),
             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
@@ -65,15 +72,11 @@ fun NotificationPage(
                     reminder = r,
                     onSnooze = {
                         onSnooze(r)
-                        scope.launch {
-                            snackbar.showSnackbar("Pospuesto 10 minutos")
-                        }
+                        scope.launch { snackbar.showSnackbar("Pospuesto 10 minutos") }
                     },
                     onConfigure = {
                         onConfigure(r)
-                        scope.launch {
-                            snackbar.showSnackbar("Abrir configuración de recordatorios…")
-                        }
+                        scope.launch { snackbar.showSnackbar("Abrir configuración de recordatorios…") }
                     }
                 )
             }
@@ -82,6 +85,7 @@ fun NotificationPage(
     }
 }
 
+/* TopBar opcional (no usado para evitar duplicado). Déjalo si luego lo quieres reutilizar. */
 @Composable
 private fun AlertsTopBar() {
     Surface(color = Color(0xFFE9F1FF)) {

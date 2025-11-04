@@ -244,7 +244,7 @@ fun RegisterScreen(
             }
         }
         Image(
-            painter = painterResource(R.drawable.logo_mindup),
+            painter = painterResource(R.drawable.ic_logo_mindup),
             contentDescription = "MindUp",
             modifier = Modifier
                 .align(Alignment.TopEnd)
