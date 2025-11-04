@@ -37,4 +37,16 @@ class UserRepository(private val prefs: UserPrefs) {
         prefs.setAccount(acc.alias, acc.email, newPassword)
         return Result.success(Unit)
     }
+
+    suspend fun getAccountOnce() = prefs.account.first()
+
+    suspend fun updateAccount(alias: String, email: String): Result<Unit> {
+        val acc = prefs.account.first()
+        if (alias.isBlank() || email.isBlank()) {
+            return Result.failure(IllegalArgumentException("Alias y correo no pueden estar vacíos"))
+        }
+        prefs.setAccount(alias.trim(), email.trim(), acc.password)
+        return Result.success(Unit)
+    }
 }
+

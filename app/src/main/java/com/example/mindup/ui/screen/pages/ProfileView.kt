@@ -21,14 +21,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mindup.R
+import com.example.mindup.ui.viewmodel.ProfileViewModel
 
 private val Muted = Color(0xFF7E8CA0)
 private val SoftBorder = Color(0xFFE7ECF5)
 
 @Composable
 fun ProfileView(
+    viewModel: ProfileViewModel,                 //
     modifier: Modifier = Modifier,
-    userName: String = "Héctor",
     streakDays: Int = 6,
     plansCount: Int = 3,
     streaksCount: Int = 8,
@@ -36,6 +37,11 @@ fun ProfileView(
     onEdit: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
+    val name by viewModel.name.collectAsState(initial = "Nombre")
+    val email by viewModel.email.collectAsState(initial = "correo.@gmail.com")
+    val phone by viewModel.phone.collectAsState(initial = "123456789")
+    val bio by viewModel.bio.collectAsState(initial = "escribe...")
+
     var showConfirm by remember { mutableStateOf(false) }
 
     Column(
@@ -83,17 +89,19 @@ fun ProfileView(
                         Spacer(Modifier.width(10.dp))
                         Column(Modifier.weight(1f)) {
                             Text(
-                                userName,
+                                name,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.SemiBold
                             )
-                            Text(
-                                "Racha: $streakDays días ",
-                                color = Muted,
-                                fontSize = 12.sp
-                            )
+                            Text("Racha: $streakDays días", color = Muted, fontSize = 12.sp)
                         }
                     }
+                }
+
+                if (bio.isNotBlank()) {
+                    Spacer(Modifier.height(8.dp))
+                    Text("Biografia:", color = Muted, fontSize = 12.sp)
+                    Text(bio, color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
                 }
 
                 Spacer(Modifier.height(10.dp))
@@ -108,7 +116,11 @@ fun ProfileView(
                     ),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
-                    Icon(Icons.Default.Edit, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    Icon(
+                        Icons.Default.Edit,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
                     Spacer(Modifier.width(6.dp))
                     Text("Editar")
                 }
@@ -245,3 +257,4 @@ private fun BadgeCard(month: String, modifier: Modifier = Modifier) {
         }
     }
 }
+

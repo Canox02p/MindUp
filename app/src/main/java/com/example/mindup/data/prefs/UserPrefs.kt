@@ -34,7 +34,7 @@ class UserPrefs(private val context: Context) {
         context.dataStore.edit { it[Keys.LOGGED_IN] = value }
     }
 
-    // Cuenta (alias, email, password)
+    // Cuenta
     val account: Flow<AccountPrefs> =
         context.dataStore.data.map {
             AccountPrefs(
