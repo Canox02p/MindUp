@@ -2,44 +2,49 @@ package com.example.mindup.ui.screen.pages
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mindup.R
 
-// =================== COLORES ===================
+// ======= PALETA =======
 private val PageBg   = Color(0xFFEAF2FF)   // Fondo azul claro
 private val CardBg   = Color.White
-private val Navy     = Color(0xFF1E2746)   // Texto principal
+private val Navy     = Color(0xFF1B1F23)   // Texto principal (más oscuro)
 private val Muted    = Color(0xFF7E8CA0)   // Texto secundario
-private val Primary  = Color(0xFF2F6BFF)   // Azul acento
+private val Primary  = Color(0xFF2B9FD6)   // Azul acento MindUp
+private val PrimaryDark = Color(0xFF1E86BD)
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileView(
     modifier: Modifier = Modifier,
@@ -49,7 +54,9 @@ fun ProfileView(
     streaksCount: Int = 8,
     cardsCount: Int = 82,
     onEdit: () -> Unit = {},
-    onLogout: () -> Unit = {}
+    onLogout: () -> Unit = {},
+    onInsigniasClick: () -> Unit = {},
+    onLogrosClick: () -> Unit = {}
 ) {
     var showConfirm by remember { mutableStateOf(false) }
 
@@ -57,21 +64,8 @@ fun ProfileView(
         modifier = modifier,
         containerColor = PageBg,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text("MindUp", color = Navy, fontWeight = FontWeight.ExtraBold)
-                },
-                actions = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                        contentDescription = null,
-                        tint = Color.Unspecified,
-                        modifier = Modifier
-                            .size(28.dp)
-                            .padding(end = 8.dp)
-                    )
-                }
-            )
+            // Header tipo “tarjeta” como en la captura
+            HeaderBar()
         }
     ) { inner ->
         Column(
@@ -80,25 +74,22 @@ fun ProfileView(
                 .padding(inner)
                 .verticalScroll(rememberScrollState())
         ) {
-            Spacer(Modifier.height(8.dp))
 
-            // ---------------- PERFIL ----------------
-            Surface(
+            // ======== PERFIL ========
+            ElevatedCard(
                 modifier = Modifier
-                    .padding(horizontal = 12.dp)
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
                     .fillMaxWidth(),
-                color = CardBg,
-                shape = RoundedCornerShape(16.dp),
-                shadowElevation = 2.dp
+                shape = RoundedCornerShape(16.dp)
             ) {
                 Column(Modifier.padding(12.dp)) {
-                    Text("Perfil", color = Primary, fontWeight = FontWeight.Bold)
+                    SectionTitle("Perfil")
+
                     Spacer(Modifier.height(8.dp))
 
                     Surface(
                         color = Color(0xFFF7F9FE),
-                        shape = RoundedCornerShape(12.dp),
-                        shadowElevation = 0.dp
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Row(
                             Modifier
@@ -136,37 +127,49 @@ fun ProfileView(
                 }
             }
 
-            // ---------------- RESUMEN ----------------
-            SectionHeader("Resumen")
+            // ======== RESUMEN ========
+            SectionHeaderRow(
+                text = "Resumen",
+                showChevron = false
+            )
+
             Row(
                 Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                SmallStatCard(title = "Rachas", value = streaksCount.toString(), modifier = Modifier.weight(1f))
-                SmallStatCard(title = "Planes", value = plansCount.toString(), modifier = Modifier.weight(1f))
-                SmallStatCard(title = "Fichas", value = cardsCount.toString(), modifier = Modifier.weight(1f))
+                SmallStatCard("Rachas", streaksCount.toString(), Modifier.weight(1f))
+                SmallStatCard("Planes", plansCount.toString(), Modifier.weight(1f))
+                SmallStatCard("Fichas", cardsCount.toString(), Modifier.weight(1f))
             }
 
-            // ---------------- INSIGNIAS ----------------
-            SectionHeader("Insignias", trailingArrow = true)
+            // ======== INSIGNIAS ========
+            SectionHeaderRow(
+                text = "Insignias",
+                showChevron = true,
+                onClick = onInsigniasClick
+            )
             Row(
                 Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                BadgeCard("Enero",  modifier = Modifier.weight(1f))
-                BadgeCard("Febrero",modifier = Modifier.weight(1f))
-                BadgeCard("Marzo",  modifier = Modifier.weight(1f))
+                BadgeCard("Enero",  Modifier.weight(1f))
+                BadgeCard("Febrero",Modifier.weight(1f))
+                BadgeCard("Marzo",  Modifier.weight(1f))
             }
 
-            // ---------------- LOGROS ----------------
-            SectionHeader("Logros", trailingArrow = true)
+            // ======== LOGROS ========
+            SectionHeaderRow(
+                text = "Logros",
+                showChevron = true,
+                onClick = onLogrosClick
+            )
             Spacer(Modifier.height(12.dp))
 
-            // ---------------- BOTÓN CERRAR SESIÓN ----------------
+            // ======== CERRAR SESIÓN ========
             Button(
                 onClick = { showConfirm = true },
                 modifier = Modifier
@@ -186,7 +189,6 @@ fun ProfileView(
         }
     }
 
-    // ---------------- DIÁLOGO DE CONFIRMACIÓN ----------------
     if (showConfirm) {
         AlertDialog(
             onDismissRequest = { showConfirm = false },
@@ -205,16 +207,95 @@ fun ProfileView(
     }
 }
 
-// ================== COMPONENTES REUTILIZABLES ==================
+// ======= Header “MindUp” tipo tarjeta =======
+@Composable
+private fun HeaderBar() {
+    // Altura pequeña como en la captura
+    Surface(color = PageBg) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+        ) {
+            Surface(
+                color = Color.White,
+                shape = RoundedCornerShape(14.dp),
+                shadowElevation = 4.dp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                // Franja superior con un tinte azul muy suave
+                Box(
+                    Modifier
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(Color(0xFFEFF7FF), Color.White)
+                            )
+                        )
+                        .padding(horizontal = 16.dp)
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Título “MindUp” con letras bicolor
+                        Text(
+                            buildAnnotatedString {
+                                withStyle(
+                                    SpanStyle(
+                                        color = Navy,
+                                        fontSize = 22.sp,
+                                        fontWeight = FontWeight.W700
+                                    )
+                                ) { append("M") }
+                                withStyle(
+                                    SpanStyle(
+                                        color = Primary,
+                                        fontSize = 22.sp,
+                                        fontWeight = FontWeight.W700
+                                    )
+                                ) { append("indUp") }
+                            }
+                        )
+                        Spacer(Modifier.weight(1f))
+                        // Logo a la derecha
+                        Image(
+                            painter = painterResource(
+                                // usa tu recurso: cambia por tu id si es otro
+                                id = R.drawable.ic_logo_mindup
+                            ),
+                            contentDescription = null,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ======= Componentes reutilizables =======
+@Composable
+private fun SectionTitle(text: String) {
+    Text(text, color = Primary, fontWeight = FontWeight.Bold)
+}
 
 @Composable
-private fun SectionHeader(text: String, trailingArrow: Boolean = false) {
+private fun SectionHeaderRow(
+    text: String,
+    showChevron: Boolean,
+    onClick: () -> Unit = {}
+) {
     Surface(
         modifier = Modifier
             .padding(horizontal = 12.dp, vertical = 10.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(enabled = showChevron) { onClick() },
         color = CardBg,
-        shape = RoundedCornerShape(16.dp),
         shadowElevation = 0.dp
     ) {
         Row(
@@ -223,8 +304,19 @@ private fun SectionHeader(text: String, trailingArrow: Boolean = false) {
                 .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text, color = Primary, fontWeight = FontWeight.ExtraBold, modifier = Modifier.weight(1f))
-            if (trailingArrow) Text("→", color = Muted, fontSize = 18.sp)
+            Text(
+                text,
+                color = Primary,
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier.weight(1f)
+            )
+            if (showChevron) {
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = Muted
+                )
+            }
         }
     }
 }
@@ -250,13 +342,9 @@ private fun SmallStatCard(title: String, value: String, modifier: Modifier = Mod
 }
 
 @Composable
-private fun BadgeCard(
-    month: String,
-    modifier: Modifier = Modifier
-) {
+private fun BadgeCard(month: String, modifier: Modifier = Modifier) {
     Surface(
-        modifier = modifier
-            .height(72.dp),
+        modifier = modifier.height(72.dp),
         color = CardBg,
         shape = RoundedCornerShape(12.dp),
         shadowElevation = 2.dp
@@ -271,7 +359,8 @@ private fun BadgeCard(
             Spacer(Modifier.width(8.dp))
             Column {
                 Text(month, color = Navy, fontWeight = FontWeight.SemiBold)
-                HorizontalDivider(color = Color(0xFFE7ECF5))
+                Spacer(Modifier.height(4.dp))
+                Text("Mes", color = Muted, fontSize = 11.sp)
             }
         }
     }
