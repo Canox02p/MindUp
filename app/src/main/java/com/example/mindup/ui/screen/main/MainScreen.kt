@@ -90,20 +90,19 @@ fun MainScreen(
                 1 -> FichaPage()
                 2 -> QuizPage()
                 3 -> NotificationPage()
-                4 -> ProfileNav(onLogout) // 👤 Perfil con sub-nav
+                4 -> ProfileNav(onLogout)
             }
         }
     }
 }
 
-// ======= HEADER: título + logo MindUp (con statusBarsPadding) =======
 @Composable
 private fun HeaderTitleBar() {
     Surface(color = PageBg) {
         Row(
             Modifier
                 .fillMaxWidth()
-                .statusBarsPadding()                 // ✅ deja espacio bajo la barra de estado
+                .statusBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -129,7 +128,7 @@ private fun HeaderTitleBar() {
             Image(
                 painter = painterResource(id = R.drawable.ic_logo_mindup),
                 contentDescription = null,
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(58.dp)
             )
         }
     }
