@@ -24,7 +24,7 @@ private val PageBg = Color(0xFFF4F7FB)
 private val CardBg = Color.White
 private val Navy   = Color(0xFF1E2746)
 private val Muted  = Color(0xFF7E8CA0)
-private val PrimaryBlue = Color(0xFF2F6BFF)
+private val PrimaryBlue = Color(0xFF2B9FD6)
 
 data class QuizOption(val id: Int, val text: String)
 data class QuizQuestion(
