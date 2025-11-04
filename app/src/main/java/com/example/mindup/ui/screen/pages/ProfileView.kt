@@ -55,7 +55,12 @@ fun ProfileView(
             modifier = Modifier
                 .padding(horizontal = 12.dp, vertical = 8.dp)
                 .fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.elevatedCardColors(
+                containerColor = CardBg,   // 🔁 Color.White
+                contentColor = Navy
+            ),
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
         ) {
             Column(Modifier.padding(12.dp)) {
                 Text("Perfil", color = Primary, fontWeight = FontWeight.Bold)
@@ -89,7 +94,6 @@ fun ProfileView(
 
                 Spacer(Modifier.height(10.dp))
 
-                // ✅ Botón Editar con caja blanca
                 OutlinedButton(
                     onClick = onEdit,
                     shape = RoundedCornerShape(24.dp),
