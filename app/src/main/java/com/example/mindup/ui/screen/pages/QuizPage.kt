@@ -1,5 +1,6 @@
 package com.example.mindup.ui.screen.pages
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,149 +10,124 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.font.FontWeight
-import kotlinx.coroutines.launch
+import kotlin.math.min
 
+private val PageBg = Color(0xFFF4F7FB)
+private val CardBg = Color.White
+private val Navy = Color(0xFF1B1F23)
 private val Muted = Color(0xFF7E8CA0)
-
-data class QuizOption(val id: Int, val text: String)
-data class QuizQuestion(
-    val title: String = "Mini Quiz",
-    val prompt: String = "¿Cuál es la derivada de x^2?",
-    val options: List<QuizOption> = listOf(
-        QuizOption(1, "2x"),
-        QuizOption(2, "x"),
-        QuizOption(3, "x²")
-    ),
-    val correctId: Int = 1
-)
+private val Primary = Color(0xFF1EC6D7)
 
 @Composable
 fun QuizPage(
     modifier: Modifier = Modifier,
-    question: QuizQuestion = QuizQuestion(),
-    onResult: (isCorrect: Boolean) -> Unit = {},
+    onConfirmHome: () -> Unit = {} // 🔹 callback que regresa al Home
 ) {
-    val scope = rememberCoroutineScope()
-    val snackbar = remember { SnackbarHostState() }
+    var selected by remember { mutableStateOf<Int?>(null) }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        contentWindowInsets = WindowInsets(0),
-        snackbarHost = { SnackbarHost(snackbar) }
+        containerColor = PageBg
     ) { inner ->
         Column(
-            modifier
+            modifier = modifier
+                .padding(inner)
                 .fillMaxSize()
-                .padding(
-                    PaddingValues(
-                        start = inner.calculateStartPadding(LayoutDirection.Ltr),
-                        end   = inner.calculateEndPadding(LayoutDirection.Ltr),
-                        bottom= inner.calculateBottomPadding()
-                    )
-                )
                 .verticalScroll(rememberScrollState())
+                .padding(horizontal = 18.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Tarjeta principal del quiz
-            Surface(
+
+            // ===== Encabezado de progreso =====
+            Text("Pregunta 1/5", color = Navy, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+            LinearProgressIndicator(
+                progress = 0.2f,
                 modifier = Modifier
-                    .padding(horizontal = 12.dp, vertical = 12.dp)
-                    .fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(18.dp),
-                shadowElevation = 2.dp
-            ) {
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
+                    .fillMaxWidth()
+                    .height(6.dp),
+                color = Primary,
+                trackColor = Color(0xFFE7ECF5)
+            )
+
+            // ===== Título y descripción =====
+            Text(
+                "Nivel 1: Fundamentos del Desarrollo Web",
+                color = Navy,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 20.sp
+            )
+            Text(
+                "¿Qué lenguaje es responsable de la **estructura** y el contenido semántico de una página web?",
+                color = Muted,
+                fontSize = 14.sp
+            )
+
+            // ===== Opciones =====
+            val options = listOf("A) JavaScript", "B) CSS", "C) HTML", "D) Python")
+
+            options.forEachIndexed { index, text ->
+                val isSelected = selected == index
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    color = CardBg,
+                    shape = RoundedCornerShape(14.dp),
+                    border = if (isSelected)
+                        BorderStroke(2.dp, Primary)
+                    else BorderStroke(1.dp, Color(0xFFE7ECF5)),
+                    tonalElevation = 0.dp,
+                    shadowElevation = 0.dp,
+                    onClick = { selected = index }
                 ) {
-                    // Título bicolor
-                    MindUpTitle(question.title, sizeSp = 22)
-
-                    Spacer(Modifier.height(6.dp))
                     Text(
-                        question.prompt,
-                        color = Muted,
-                        fontSize = 14.sp
+                        text,
+                        modifier = Modifier.padding(vertical = 14.dp, horizontal = 16.dp),
+                        fontWeight = FontWeight.SemiBold,
+                        color = Navy
                     )
-                    Spacer(Modifier.height(12.dp))
-
-                    var selected by remember { mutableStateOf<Int?>(null) }
-                    question.options.forEach { opt ->
-                        QuizRadio(
-                            text = opt.text,
-                            selected = selected == opt.id,
-                            onClick = { selected = opt.id }
-                        )
-                        Spacer(Modifier.height(8.dp))
-                    }
-
-                    Spacer(Modifier.height(8.dp))
-
-                    Button(
-                        onClick = {
-                            if (selected == null) {
-                                scope.launch { snackbar.showSnackbar("Selecciona una opción") }
-                                return@Button
-                            }
-                            val ok = selected == question.correctId
-                            onResult(ok)
-                            scope.launch {
-                                snackbar.showSnackbar(if (ok) "¡Correcto!" else "Respuesta incorrecta")
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(44.dp),
-                        shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = Color.White
-                        )
-                    ) {
-                        Text("Enviar", fontWeight = FontWeight.SemiBold)
-                    }
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
-        }
-    }
-}
+            Spacer(Modifier.height(20.dp))
 
-@Composable
-private fun QuizRadio(
-    text: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(10.dp),
-        color = Color(0xFFF7F9FC),
-        shadowElevation = 0.dp
-    ) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .height(42.dp)
-                .padding(horizontal = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            RadioButton(
-                selected = selected,
-                onClick = onClick,
-                colors = RadioButtonDefaults.colors(
-                    selectedColor = MaterialTheme.colorScheme.primary,
-                    unselectedColor = Muted
+            // ===== Pista =====
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = androidx.compose.ui.res.painterResource(
+                        id = android.R.drawable.ic_menu_info_details
+                    ),
+                    contentDescription = null,
+                    tint = Muted,
+                    modifier = Modifier.size(18.dp)
                 )
-            )
-            Spacer(Modifier.width(6.dp))
-            Text(text, color = MaterialTheme.colorScheme.onSurface)
+                Spacer(Modifier.width(6.dp))
+                Text("Pista", color = Muted, fontSize = 13.sp)
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // ===== Botón CONFIRMAR =====
+            Button(
+                onClick = { onConfirmHome() }, // 🔹 Regresa al Home
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Primary,
+                    contentColor = Color.White
+                )
+            ) {
+                Text("CONFIRMAR", fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
+            }
+
+            Spacer(Modifier.height(12.dp))
         }
     }
 }

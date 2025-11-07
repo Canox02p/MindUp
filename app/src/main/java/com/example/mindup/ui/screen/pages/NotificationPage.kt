@@ -64,7 +64,7 @@ fun NotificationPage(
                     .fillMaxWidth()
                     .padding(start = GUTTER, end = GUTTER, top = 10.dp, bottom = 6.dp)
             ) {
-                MindUpTitle("Alertas", sizeSp = 26)
+
             }
 
             // --- Lista de recordatorios ---
