@@ -69,7 +69,6 @@ fun QuizPage(
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
-                    // Título bicolor
                     MindUpTitle(question.title, sizeSp = 22)
 
                     Spacer(Modifier.height(6.dp))

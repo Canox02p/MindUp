@@ -1,15 +1,18 @@
 package com.example.mindup.ui.screen.pages
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Help
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,243 +21,230 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mindup.R
 import com.example.mindup.ui.viewmodel.ProfileViewModel
 
+/* ===== Paleta ===== */
 private val Muted = Color(0xFF7E8CA0)
+private val CardBg = Color.White
+private val Soft = Color(0xFFF2F6FC)
 private val SoftBorder = Color(0xFFE7ECF5)
+private val TealPromo = Color(0xFF1EC6D7)
+private val StreakBg = Color(0xFFFFE4D6)
+private val StreakText = Color(0xFFB85B2A)
 
 @Composable
 fun ProfileView(
-    viewModel: ProfileViewModel,                 //
+    viewModel: ProfileViewModel,
     modifier: Modifier = Modifier,
+    precision: Int = 85,
+    cursosActivos: Int = 3,
+    puntos: Int = 140,
     streakDays: Int = 6,
-    plansCount: Int = 3,
-    streaksCount: Int = 8,
-    cardsCount: Int = 82,
     onEdit: () -> Unit = {},
-    onLogout: () -> Unit = {}
+    onLogout: () -> Unit = {},
+    onHelp: () -> Unit = {},
+    onBadges: () -> Unit = {},
+    onContrib: () -> Unit = {}
 ) {
-    val name by viewModel.name.collectAsState(initial = "Nombre")
-    val email by viewModel.email.collectAsState(initial = "correo.@gmail.com")
-    val phone by viewModel.phone.collectAsState(initial = "123456789")
-    val bio by viewModel.bio.collectAsState(initial = "escribe...")
-
-    var showConfirm by remember { mutableStateOf(false) }
+    val name by viewModel.name.collectAsState(initial = "Héctor")
+    var confirm by remember { mutableStateOf(false) }
 
     Column(
-        modifier = modifier
+        modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(Soft)
             .verticalScroll(rememberScrollState())
+            .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
-        Spacer(Modifier.height(8.dp))
+        /* Encabezado */
+        Surface(color = CardBg, shape = RoundedCornerShape(18.dp), shadowElevation = 2.dp) {
+            Column(Modifier.padding(14.dp)) {
 
-        // ===== PERFIL =====
-        ElevatedCard(
-            modifier = Modifier
-                .padding(horizontal = 12.dp, vertical = 8.dp)
-                .fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface
-            ),
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
-        ) {
-            Column(Modifier.padding(12.dp)) {
-                MindUpTitle("Perfil", sizeSp = 18)
-                Spacer(Modifier.height(8.dp))
-
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.ic_launcher_foreground),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFFE9EFFB))
+                Spacer(Modifier.height(6.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(
+                        painter = painterResource(R.drawable.ic_launcher_foreground),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(54.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFE9EFFB))
+                    )
+                    Spacer(Modifier.width(10.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            text = "¡Hola, $name!",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
-                        Spacer(Modifier.width(10.dp))
-                        Column(Modifier.weight(1f)) {
+                        Spacer(Modifier.height(6.dp))
+                        Surface(shape = RoundedCornerShape(50), color = StreakBg, tonalElevation = 0.dp) {
                             Text(
-                                name,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontWeight = FontWeight.SemiBold
+                                "🔥  Racha: $streakDays Días",
+                                color = StreakText,
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                             )
-                            Text("Racha: $streakDays días", color = Muted, fontSize = 12.sp)
                         }
                     }
                 }
-
-                if (bio.isNotBlank()) {
-                    Spacer(Modifier.height(8.dp))
-                    Text("Biografia:", color = Muted, fontSize = 12.sp)
-                    Text(bio, color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
-                }
-
                 Spacer(Modifier.height(10.dp))
+                SimplePill(
+                    leading = { Icon(Icons.Filled.Star, null, tint = MaterialTheme.colorScheme.primary) },
+                    text = "Logro: Estudiante Constante"
+                )
+            }
+        }
 
+        Spacer(Modifier.height(10.dp))
+
+        /* Métricas */
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            MetricCard("Precisión Global", "$precision%", modifier = Modifier.weight(1f))
+            MetricCard("Cursos Activos", "$cursosActivos", modifier = Modifier.weight(1f))
+            MetricCard("Puntos Totales", "$puntos", modifier = Modifier.weight(1f))
+        }
+
+        Spacer(Modifier.height(10.dp))
+
+        /* Accesos */
+        ActionRow(text = "Logros e Insignias", onClick = onBadges)
+        ActionRow(text = "Mis Contribuciones", onClick = onContrib)
+
+        Spacer(Modifier.height(10.dp))
+
+        /* Promo */
+        Surface(color = TealPromo, shape = RoundedCornerShape(16.dp), shadowElevation = 0.dp) {
+            Column(Modifier.fillMaxWidth().padding(14.dp)) {
+                Text(
+                    "Desbloquea vidas infinitas y ventajas exclusivas con MindUp Premium",
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(Modifier.height(8.dp))
                 OutlinedButton(
-                    onClick = onEdit,
-                    shape = RoundedCornerShape(24.dp),
-                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onHelp,
+                    border = ButtonDefaults.outlinedButtonBorder,
                     colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
+                        containerColor = Color.White,
                         contentColor = MaterialTheme.colorScheme.primary
                     ),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-                ) {
-                    Icon(
-                        Icons.Default.Edit,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(Modifier.width(6.dp))
-                    Text("Editar")
-                }
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.height(38.dp)
+                ) { Text("Actualizar ahora", fontWeight = FontWeight.SemiBold) }
             }
         }
 
-        // ===== RESUMEN =====
-        SectionHeader("Resumen")
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            SmallStatCard(title = "Rachas", value = streaksCount.toString(), modifier = Modifier.weight(1f))
-            SmallStatCard(title = "Planes", value = plansCount.toString(), modifier = Modifier.weight(1f))
-            SmallStatCard(title = "Fichas", value = cardsCount.toString(), modifier = Modifier.weight(1f))
-        }
+        Spacer(Modifier.height(10.dp))
 
-        // ===== INSIGNIAS =====
-        SectionHeader("Insignias", trailingArrow = true)
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            BadgeCard("Enero",  Modifier.weight(1f))
-            BadgeCard("Febrero",Modifier.weight(1f))
-            BadgeCard("Marzo",  Modifier.weight(1f))
-        }
+        /* Config & Logout */
+        RowItem(
+            icon = { Icon(Icons.AutoMirrored.Filled.Help, null, tint = MaterialTheme.colorScheme.onSurface) },
+            text = "Configuración y ayuda",
+            onClick = onHelp
+        )
+        RowItem(
+            icon = { Icon(Icons.AutoMirrored.Filled.Logout, null, tint = Color(0xFFD14343)) },
+            text = "Cerrar sesión",
+            onClick = { confirm = true }
+        )
 
-        // ===== LOGROS =====
-        SectionHeader("Logros", trailingArrow = true)
         Spacer(Modifier.height(12.dp))
-
-        // ===== CERRAR SESIÓN =====
-        Button(
-            onClick = { showConfirm = true },
-            modifier = Modifier
-                .padding(horizontal = 12.dp)
-                .fillMaxWidth()
-                .height(48.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFEF5350),
-                contentColor = Color.White
-            ),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text("Cerrar sesión", fontWeight = FontWeight.SemiBold)
-        }
-
-        Spacer(Modifier.height(24.dp))
     }
 
-    if (showConfirm) {
+    if (confirm) {
         AlertDialog(
-            onDismissRequest = { showConfirm = false },
+            onDismissRequest = { confirm = false },
             title = { Text("Cerrar sesión") },
             text = { Text("¿Seguro que deseas salir de tu cuenta?") },
-            confirmButton = {
-                TextButton(onClick = { showConfirm = false; onLogout() }) { Text("Sí, salir") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showConfirm = false }) { Text("Cancelar") }
-            }
+            confirmButton = { TextButton(onClick = { confirm = false; onLogout() }) { Text("Sí, salir") } },
+            dismissButton = { TextButton(onClick = { confirm = false }) { Text("Cancelar") } }
         )
     }
 }
 
-@Composable
-private fun SectionHeader(text: String, trailingArrow: Boolean = false) {
-    Surface(
-        modifier = Modifier
-            .padding(horizontal = 12.dp, vertical = 10.dp)
-            .fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(16.dp),
-        shadowElevation = 0.dp
-    ) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            MindUpTitle(text, sizeSp = 18)
-            Spacer(Modifier.weight(1f))
-            if (trailingArrow) Text("→", color = Muted, fontSize = 18.sp)
-        }
-    }
-}
+/* =================== Reusables =================== */
 
 @Composable
-private fun SmallStatCard(title: String, value: String, modifier: Modifier = Modifier) {
+private fun MetricCard(title: String, value: String, modifier: Modifier = Modifier) {
     Surface(
-        modifier = modifier.height(72.dp),
-        color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(12.dp),
+        modifier = modifier.height(86.dp),
+        color = CardBg,
+        shape = RoundedCornerShape(16.dp),
         shadowElevation = 2.dp
     ) {
         Column(
-            Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            Modifier.fillMaxSize().padding(10.dp),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(value, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
-            Spacer(Modifier.height(2.dp))
             Text(title, color = Muted, fontSize = 12.sp)
+            Text(value, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
         }
     }
 }
 
 @Composable
-private fun BadgeCard(month: String, modifier: Modifier = Modifier) {
+private fun SimplePill(leading: @Composable () -> Unit, text: String) {
     Surface(
-        modifier = modifier.height(72.dp),
-        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(12.dp),
-        shadowElevation = 2.dp
+        color = CardBg,
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp,
+        border = androidx.compose.foundation.BorderStroke(1.dp, SoftBorder)
     ) {
         Row(
-            Modifier
-                .fillMaxSize()
-                .padding(horizontal = 10.dp),
+            Modifier.fillMaxWidth().padding(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("", fontSize = 22.sp)
+            leading()
             Spacer(Modifier.width(8.dp))
-            Column {
-                Text(month, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)
-                HorizontalDivider(color = SoftBorder)
-            }
+            Text(text, fontWeight = FontWeight.SemiBold)
         }
     }
 }
 
+@Composable
+private fun ActionRow(text: String, onClick: () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = Color(0xFFE9EFF6),
+        shape = RoundedCornerShape(14.dp),
+        shadowElevation = 0.dp
+    ) {
+        Row(
+            Modifier.fillMaxWidth().clickable { onClick() }.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+            Spacer(Modifier.weight(1f))
+            Text("›", color = Muted, fontSize = 22.sp)
+        }
+    }
+}
+
+@Composable
+private fun RowItem(
+    icon: @Composable () -> Unit,
+    text: String,
+    onClick: () -> Unit
+) {
+    Surface(color = CardBg, shape = RoundedCornerShape(14.dp), shadowElevation = 1.dp) {
+        Row(
+            Modifier.fillMaxWidth().clickable { onClick() }.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            icon()
+            Spacer(Modifier.width(10.dp))
+            Text(text, fontWeight = FontWeight.SemiBold)
+        }
+    }
+}
