@@ -2,11 +2,7 @@ package com.example.mindup.ui.screen.pages
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,6 +16,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mindup.R
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 
 private val Muted = Color(0xFF7E8CA0)
 private val SoftBorder = Color(0xFFE7ECF5)
@@ -53,12 +54,6 @@ fun PlanDetailPage(
             ),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // ======= Título =======
-            item {
-                MindUpTitle("Examen Final de Matemáticas", sizeSp = 26)
-            }
-
-            // ======= Chips de información =======
             item {
                 Row(
                     Modifier
@@ -66,9 +61,22 @@ fun PlanDetailPage(
                         .padding(top = 2.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // Chip con reloj
                     AssistChip(
                         onClick = { },
-                        label = { Text("Próximo examen: en 5 días", fontSize = 12.sp) },
+                        label = {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("5 Días", fontSize = 12.sp)
+                                Text("Restantes", fontSize = 10.sp)
+                            }
+                        },
+                        leadingIcon = {
+                            Image(
+                                painter = painterResource(id = R.drawable.reloj), // Asegúrate de tener el ícono de reloj en los recursos
+                                contentDescription = "Reloj",
+                                modifier = Modifier.size(16.dp)
+                            )
+                        },
                         colors = AssistChipDefaults.assistChipColors(
                             containerColor = Color(0xFFEFF7FF),
                             labelColor = Color(0xFF167ABF)
@@ -76,9 +84,45 @@ fun PlanDetailPage(
                         border = BorderStroke(1.dp, Color(0xFFD3E8FF))
                     )
 
+                    // Chip con precisión
                     AssistChip(
                         onClick = { },
-                        label = { Text("3 Módulos Pendientes", fontSize = 12.sp) },
+                        label = {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("80%", fontSize = 12.sp)
+                                Text("Precisión", fontSize = 10.sp)
+                            }
+                        },
+                        leadingIcon = {
+                            Image(
+                                painter = painterResource(id = R.drawable.precision),
+                                contentDescription = "Precisión",
+                                modifier = Modifier.size(16.dp)
+                            )
+                        },
+                        colors = AssistChipDefaults.assistChipColors(
+                            containerColor = Color(0xFFEFF7FF),
+                            labelColor = Color(0xFF167ABF)
+                        ),
+                        border = BorderStroke(1.dp, Color(0xFFD3E8FF))
+                    )
+
+                    // Chip con calendario
+                    AssistChip(
+                        onClick = { },
+                        label = {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("2 Módulos", fontSize = 12.sp)
+                                Text("Pendientes", fontSize = 10.sp)
+                            }
+                        },
+                        leadingIcon = {
+                            Image(
+                                painter = painterResource(id = R.drawable.calendario),
+                                contentDescription = "Calendario",
+                                modifier = Modifier.size(16.dp)
+                            )
+                        },
                         colors = AssistChipDefaults.assistChipColors(
                             containerColor = Color(0xFFEFF7FF),
                             labelColor = Color(0xFF167ABF)
@@ -91,11 +135,6 @@ fun PlanDetailPage(
             // ======= Progreso =======
             item {
                 Column {
-                    Text(
-                        "Progreso de hoy",
-                        fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
                     Spacer(Modifier.height(6.dp))
                     ProgressBarLabeled(current = current, total = total, progress = progress)
                 }
@@ -134,17 +173,53 @@ fun PlanDetailPage(
             items(
                 listOf(
                     Triple(R.drawable.base, "MI BANCO DE PREGUNTAS", "12 creadas"),
-                    Triple(R.drawable.cohete, "Desbloquea Repaso Inteligente", "Enfócate los 5 días al máximo con MindUp Premium")
+                    Triple(R.drawable.cohete, "Agrega una nueva pregunta", "")
                 )
             ) { (iconRes, title, subtitle) ->
                 val onClick = if (iconRes == R.drawable.base) onOpenBank else onPremium
                 SimpleIconCard(iconRes, title, subtitle, ContentBg, onClick)
+            }
+
+            // ======= Nuevo botón Premium =======
+            item {
+                PremiumButton(
+                    text = "Desbloquea Repaso Inteligente. ¡Hazte Premium!",
+                    onClick = onPremium
+                )
             }
         }
     }
 }
 
 /* ---------- Reusables ---------- */
+
+@Composable
+private fun PremiumButton(text: String, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp)
+            .background(Color(0xFF31C2DC), shape = RoundedCornerShape(10.dp))
+            .clickable(onClick = onClick)
+            .padding(16.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.corona),
+                contentDescription = "Icono Premium",
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(Modifier.width(12.dp))
+            Text(
+                text = text,
+                color = Color.White,
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+            )
+        }
+    }
+}
 
 @Composable
 private fun ProgressBarLabeled(current: Int, total: Int, progress: Float) {

@@ -84,7 +84,7 @@ fun MainScreen(
         Box(Modifier.padding(inner)) {
             when (selectedIndex) {
                 0 -> {
-                    // Si hay módulo seleccionado desde Home -> mostrar Quiz
+                    // Si hay módulo seleccionado desde Home -
                     val pending = quizFromHomeModuleId
                     if (pending != null) {
                         QuizPage(
