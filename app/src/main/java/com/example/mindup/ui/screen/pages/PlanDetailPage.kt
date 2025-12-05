@@ -1,8 +1,14 @@
 package com.example.mindup.ui.screen.pages
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,17 +21,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mindup.R
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 
+// --- Colores ---
 private val Muted = Color(0xFF7E8CA0)
 private val SoftBorder = Color(0xFFE7ECF5)
 private val SoftTeal = Color(0xFFDBF6FF)
-private val ContentBg = Color(0xFFDBF6FF)
+private val ContentBg = Color(0xFFEFF6FF)
+
+// Colores específicos
+private val BrandBlue = Color(0xFF0288D1)
+private val CardBorder = Color(0xFFE1F5FE)
+private val CardBg = Color(0xFFFFFFFF)
+private val PressedCyan = Color(0xFF26C6DA) // Color Cyan intenso al presionar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,9 +47,9 @@ fun PlanDetailPage(
     val current = (progress * total).toInt()
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = Color.White,
         contentWindowInsets = WindowInsets(0),
-        topBar = { /* sin AppBar */ }
+        topBar = { }
     ) { inner ->
         LazyColumn(
             modifier = Modifier
@@ -50,103 +57,52 @@ fun PlanDetailPage(
                 .padding(inner),
             contentPadding = PaddingValues(
                 start = gutter, end = gutter,
-                top = 0.dp, bottom = 16.dp
+                top = 16.dp,
+                bottom = 16.dp
             ),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+
+            // ======= 1. TARJETAS DE ESTADO =======
             item {
                 Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(top = 2.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Chip con reloj
-                    AssistChip(
-                        onClick = { },
-                        label = {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("5 Días", fontSize = 12.sp)
-                                Text("Restantes", fontSize = 10.sp)
-                            }
-                        },
-                        leadingIcon = {
-                            Image(
-                                painter = painterResource(id = R.drawable.reloj), // Asegúrate de tener el ícono de reloj en los recursos
-                                contentDescription = "Reloj",
-                                modifier = Modifier.size(16.dp)
-                            )
-                        },
-                        colors = AssistChipDefaults.assistChipColors(
-                            containerColor = Color(0xFFEFF7FF),
-                            labelColor = Color(0xFF167ABF)
-                        ),
-                        border = BorderStroke(1.dp, Color(0xFFD3E8FF))
+                    StatusInfoCard(
+                        iconRes = R.drawable.reloj,
+                        value = "5 Días",
+                        label = "Restantes",
+                        modifier = Modifier.weight(1f)
                     )
-
-                    // Chip con precisión
-                    AssistChip(
-                        onClick = { },
-                        label = {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("80%", fontSize = 12.sp)
-                                Text("Precisión", fontSize = 10.sp)
-                            }
-                        },
-                        leadingIcon = {
-                            Image(
-                                painter = painterResource(id = R.drawable.precision),
-                                contentDescription = "Precisión",
-                                modifier = Modifier.size(16.dp)
-                            )
-                        },
-                        colors = AssistChipDefaults.assistChipColors(
-                            containerColor = Color(0xFFEFF7FF),
-                            labelColor = Color(0xFF167ABF)
-                        ),
-                        border = BorderStroke(1.dp, Color(0xFFD3E8FF))
+                    StatusInfoCard(
+                        iconRes = R.drawable.precision,
+                        value = "80%",
+                        label = "Precisión",
+                        modifier = Modifier.weight(1f)
                     )
-
-                    // Chip con calendario
-                    AssistChip(
-                        onClick = { },
-                        label = {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("2 Módulos", fontSize = 12.sp)
-                                Text("Pendientes", fontSize = 10.sp)
-                            }
-                        },
-                        leadingIcon = {
-                            Image(
-                                painter = painterResource(id = R.drawable.calendario),
-                                contentDescription = "Calendario",
-                                modifier = Modifier.size(16.dp)
-                            )
-                        },
-                        colors = AssistChipDefaults.assistChipColors(
-                            containerColor = Color(0xFFEFF7FF),
-                            labelColor = Color(0xFF167ABF)
-                        ),
-                        border = BorderStroke(1.dp, Color(0xFFD3E8FF))
+                    StatusInfoCard(
+                        iconRes = R.drawable.calendario,
+                        value = "2 Módulos",
+                        label = "Pendientes",
+                        modifier = Modifier.weight(1f)
                     )
                 }
             }
 
-            // ======= Progreso =======
+            // ======= 2. BARRA DE PROGRESO =======
             item {
                 Column {
-                    Spacer(Modifier.height(6.dp))
                     ProgressBarLabeled(current = current, total = total, progress = progress)
                 }
             }
 
-            // ======= Ruta de estudio =======
+            // ======= 3. RUTA DE ESTUDIO =======
             item { SectionHeader("Mi Ruta de Estudio") }
 
-            // ======= Tarjeta de hoy =======
             item {
                 RouteCard(
-                    title = "HOY: Unidad 5 · Límites Avanzados (25 min)",
+                    title = "HOY: Unidad 5 · Límites Avanzados",
                     bg = SoftTeal.copy(alpha = 1f),
                     border = MaterialTheme.colorScheme.primary.copy(alpha = .35f),
                     buttonText = "¡EMPEZAR!",
@@ -155,10 +111,9 @@ fun PlanDetailPage(
                 )
             }
 
-            // ======= Tarjeta de mañana =======
             item {
                 RouteCard(
-                    title = "MAÑANA: Repaso · Derivadas e Integrales (15 min)",
+                    title = "MAÑANA: Repaso ",
                     bg = Color(0xFFF7F9FC),
                     border = SoftBorder,
                     buttonText = "Ver detalle",
@@ -167,20 +122,59 @@ fun PlanDetailPage(
                 )
             }
 
-            // ======= Contenido personal =======
+            // ======= 4. CONTENIDO PERSONAL =======
             item { SectionHeader("Mi Contenido Personal") }
-
-            items(
-                listOf(
-                    Triple(R.drawable.base, "MI BANCO DE PREGUNTAS", "12 creadas"),
-                    Triple(R.drawable.cohete, "Agrega una nueva pregunta", "")
+            item {
+                SimpleIconCard(
+                    iconRes = R.drawable.base,
+                    title = "MI BANCO DE PREGUNTAS",
+                    subtitle = "12 creadas",
+                    bg = ContentBg,
+                    onClick = onOpenBank
                 )
-            ) { (iconRes, title, subtitle) ->
-                val onClick = if (iconRes == R.drawable.base) onOpenBank else onPremium
-                SimpleIconCard(iconRes, title, subtitle, ContentBg, onClick)
             }
 
-            // ======= Nuevo botón Premium =======
+            item {
+                val interactionSource = remember { MutableInteractionSource() }
+                val isPressed by interactionSource.collectIsPressedAsState()
+                val animatedColor by animateColorAsState(
+                    targetValue = if (isPressed) PressedCyan else ContentBg,
+                    label = "colorAnim"
+                )
+
+                Surface(
+                    onClick = onPremium,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(14.dp),
+                    color = animatedColor,
+                    interactionSource = interactionSource,
+                    shadowElevation = 0.dp
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp, horizontal = 20.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_add),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = "Agrega una nueva pregunta",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+                        )
+                    }
+                }
+            }
+
+            // ======= 5. BOTÓN PREMIUM =======
             item {
                 PremiumButton(
                     text = "Desbloquea Repaso Inteligente. ¡Hazte Premium!",
@@ -191,15 +185,64 @@ fun PlanDetailPage(
     }
 }
 
-/* ---------- Reusables ---------- */
+
+@Composable
+fun StatusInfoCard(
+    iconRes: Int,
+    value: String,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, CardBorder),
+        color = CardBg
+    ) {
+        Row(
+            modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                painter = painterResource(id = iconRes),
+                contentDescription = null,
+                tint = Color.Black.copy(alpha = 0.7f),
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Column(
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp,
+                        color = Color.Black
+                    )
+                )
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 10.sp,
+                        color = BrandBlue
+                    ),
+                    lineHeight = 10.sp
+                )
+            }
+        }
+    }
+}
 
 @Composable
 private fun PremiumButton(text: String, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(12.dp)
-            .background(Color(0xFF31C2DC), shape = RoundedCornerShape(10.dp))
+            .padding(vertical = 4.dp)
+            .background(Color(0xFF31A5DC), shape = RoundedCornerShape(10.dp))
             .clickable(onClick = onClick)
             .padding(16.dp)
     ) {
@@ -227,20 +270,25 @@ private fun ProgressBarLabeled(current: Int, total: Int, progress: Float) {
         Box(
             Modifier
                 .fillMaxWidth()
-                .height(10.dp)
-                .clip(RoundedCornerShape(20.dp))
-                .background(SoftBorder)
+                .height(8.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color(0xFFF1F5F9))
         ) {
             Box(
                 Modifier
                     .fillMaxWidth(progress.coerceIn(0f, 1f))
                     .fillMaxHeight()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(MaterialTheme.colorScheme.primary)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(BrandBlue)
             )
         }
         Spacer(Modifier.height(6.dp))
-        Text("$current/$total Preguntas (${(progress * 100).toInt()}%)", color = Muted, fontSize = 12.sp)
+        Text(
+            text = "$current/$total Preguntas (${(progress * 100).toInt()}%)",
+            color = Muted,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 
@@ -248,9 +296,10 @@ private fun ProgressBarLabeled(current: Int, total: Int, progress: Float) {
 private fun SectionHeader(text: String) {
     Text(
         text = text,
-        color = MaterialTheme.colorScheme.onSurface,
+        color = Color(0xFF1E293B),
         fontSize = 18.sp,
-        fontWeight = FontWeight.ExtraBold
+        fontWeight = FontWeight.ExtraBold,
+        modifier = Modifier.padding(top = 8.dp)
     )
 }
 
@@ -280,9 +329,10 @@ private fun RouteCard(
         ) {
             Text(
                 title,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = Color(0xFF334155),
                 modifier = Modifier.weight(1f),
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 13.sp
             )
             Spacer(Modifier.width(10.dp))
 
@@ -290,30 +340,31 @@ private fun RouteCard(
             val isPressed by interaction.collectIsPressedAsState()
 
             val container = when {
-                primaryPressOnly && isPressed -> MaterialTheme.colorScheme.primary
+                primaryPressOnly && isPressed -> BrandBlue
                 primaryPressOnly && !isPressed -> Color.White
                 forceWhiteButton -> Color.White
-                else -> MaterialTheme.colorScheme.primary
+                else -> BrandBlue
             }
 
             val content = when {
                 primaryPressOnly && isPressed -> Color.White
-                primaryPressOnly && !isPressed -> MaterialTheme.colorScheme.primary
-                forceWhiteButton -> MaterialTheme.colorScheme.primary
+                primaryPressOnly && !isPressed -> BrandBlue
+                forceWhiteButton -> BrandBlue
                 else -> buttonTint
             }
 
             Button(
                 onClick = onClick,
                 interactionSource = interaction,
-                shape = RoundedCornerShape(10.dp),
+                shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = container,
                     contentColor = content
                 ),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
+                modifier = Modifier.height(36.dp)
             ) {
-                Text(buttonText, fontWeight = FontWeight.ExtraBold, fontSize = 12.sp)
+                Text(buttonText, fontWeight = FontWeight.Bold, fontSize = 11.sp)
             }
         }
     }
@@ -337,18 +388,20 @@ private fun SimpleIconCard(
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
                 painter = painterResource(id = iconRes),
                 contentDescription = null,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(32.dp)
             )
-            Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
-                Text(title, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)
-                Text(subtitle, color = Muted, fontSize = 12.sp)
+                Text(title, color = Color(0xFF334155), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                if (subtitle.isNotEmpty()) {
+                    Text(subtitle, color = Muted, fontSize = 12.sp)
+                }
             }
         }
     }

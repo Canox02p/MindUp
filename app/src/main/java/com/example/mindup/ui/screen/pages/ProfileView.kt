@@ -132,8 +132,6 @@ fun ProfileView(
                         text = "Logro: Estudiante Constante"
                     )
                 }
-
-                /* ✅ BOTÓN DE EDITAR flotante sin crear espacio */
                 IconButton(
                     onClick = onEdit,
                     modifier = Modifier
@@ -168,8 +166,8 @@ fun ProfileView(
 
         /* =================== ACCESOS =================== */
         ActionRow(text = "Logros e Insignias", onClick = onBadges)
+        Spacer(Modifier.height(12.dp))
         ActionRow(text = "Mis Contribuciones", onClick = onContrib)
-
         Spacer(Modifier.height(10.dp))
 
         /* =================== PROMO =================== */
@@ -217,7 +215,7 @@ fun ProfileView(
             text = "Configuración y ayuda",
             onClick = onHelp
         )
-
+        Spacer(Modifier.height(10.dp))
         RowItem(
             icon = {
                 Icon(Icons.AutoMirrored.Filled.Logout, null, tint = Color(0xFFD14343))
