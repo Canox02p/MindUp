@@ -21,8 +21,6 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
@@ -34,9 +32,11 @@ private val Aqua   = Color(0xFF15D6DB)
 enum class ModuleState { LOCKED, AVAILABLE, DONE }
 data class Module(val id: Int, val state: ModuleState)
 
+/* ---------------- TOP BAR ---------------- */
+
 @Composable
 fun HomeTopBar(
-    title: String = "Fundamentos Matematicos",
+    title: String = "Fundamentos Matemáticos",
     hearts: String = "5",
     coins: String = "140",
     streakDays: Int = 6
@@ -127,91 +127,21 @@ fun HomeTopBar(
     }
 }
 
-@Composable
-private fun TopPill(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    value: String,
-    tint: Color,
-    modifier: Modifier
-) {
-    Surface(modifier = modifier.height(44.dp), color = CardBg, shape = RoundedCornerShape(14.dp), shadowElevation = 1.dp) {
-        Row(
-            Modifier
-                .fillMaxHeight()
-                .padding(horizontal = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(icon, null, tint = tint)
-            Spacer(Modifier.width(8.dp))
-            Text(value, color = Navy, style = MaterialTheme.typography.bodyMedium)
-        }
-    }
-}
-
-@Composable
-private fun StreakPill(
-    days: Int,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier.height(44.dp),
-        color = CardBg,
-        shape = RoundedCornerShape(14.dp),
-        shadowElevation = 1.dp
-    ) {
-        Row(
-            Modifier
-                .fillMaxHeight()
-                .padding(horizontal = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(Icons.Default.LocalFireDepartment, contentDescription = null, tint = Color(0xFFFF7043))
-            Spacer(Modifier.width(8.dp))
-            Text("Racha: $days Días", color = Navy, style = MaterialTheme.typography.bodyMedium)
-        }
-    }
-}
+/* ---------------- ROADMAP ---------------- */
 
 @Composable
 fun RoadMapSection(
-    modifier: Modifier = Modifier,
-    onStartQuiz: (moduleId: Int) -> Unit = {}
+    modules: List<Module>,
+    onTapModule: (id: Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    var modules by remember {
-        mutableStateOf(
-            listOf(
-                Module(1, ModuleState.AVAILABLE),
-                Module(2, ModuleState.LOCKED),
-                Module(3, ModuleState.LOCKED),
-                Module(4, ModuleState.LOCKED),
-                Module(5, ModuleState.LOCKED),
-            )
-        )
-    }
-
     var containerOffsetInRoot by remember { mutableStateOf(Offset.Zero) }
-    var containerSize by remember { mutableStateOf(IntSize.Zero) }
     val centers = remember { mutableStateListOf<Offset>() }
 
     fun registerCenter(index: Int, centerInRoot: Offset) {
         val local = centerInRoot - containerOffsetInRoot
         while (centers.size <= index) centers.add(Offset.Zero)
         centers[index] = local
-    }
-
-    fun tapNode(id: Int) {
-        val idx = modules.indexOfFirst { it.id == id }
-        if (idx == -1) return
-        if (modules[idx].state != ModuleState.AVAILABLE) return
-
-        onStartQuiz(id)
-
-        val m = modules.toMutableList()
-        m[idx] = m[idx].copy(state = ModuleState.DONE)
-        if (idx + 1 < m.size && m[idx + 1].state == ModuleState.LOCKED) {
-            m[idx + 1] = m[idx + 1].copy(state = ModuleState.AVAILABLE)
-        }
-        modules = m
     }
 
     val rowAlignments = listOf(
@@ -228,7 +158,6 @@ fun RoadMapSection(
             .padding(horizontal = 18.dp)
             .onGloballyPositioned { coords ->
                 containerOffsetInRoot = coords.positionInRoot()
-                containerSize = coords.size
             }
     ) {
         Canvas(
@@ -239,22 +168,16 @@ fun RoadMapSection(
             if (centers.size >= 2 && centers.all { it != Offset.Zero }) {
                 val path = Path()
                 path.moveTo(centers[0].x, centers[0].y)
-
                 for (i in 0 until centers.lastIndex) {
                     val p0 = centers[i]
                     val p1 = centers[i + 1]
-
                     val midY = (p0.y + p1.y) / 2f
-
                     val side = if (i % 2 == 0) 1f else -1f
                     val dx = size.width * 0.18f * side
-
                     val c1 = Offset(p0.x + dx, midY)
                     val c2 = Offset(p1.x - dx, midY)
-
                     path.cubicTo(c1.x, c1.y, c2.x, c2.y, p1.x, p1.y)
                 }
-
                 drawPath(
                     path = path,
                     color = Aqua,
@@ -273,10 +196,9 @@ fun RoadMapSection(
                 val alignment = rowAlignments.getOrElse(index) { Arrangement.Center }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = alignment) {
                     NodeCard(
-                        index = index,
                         state = module.state,
                         onMeasuredCenter = { center -> registerCenter(index, center) },
-                        onClick = { tapNode(module.id) }
+                        onClick = { if (module.state == ModuleState.AVAILABLE) onTapModule(module.id) }
                     )
                 }
             }
@@ -286,12 +208,10 @@ fun RoadMapSection(
 
 @Composable
 private fun NodeCard(
-    index: Int,
     state: ModuleState,
     onMeasuredCenter: (Offset) -> Unit,
     onClick: () -> Unit
 ) {
-    val density = LocalDensity.current
     Surface(
         modifier = Modifier
             .size(110.dp)
@@ -321,12 +241,57 @@ private fun NodeCard(
     }
 }
 
+/* ---------------- HOME PAGE ---------------- */
+
 @Composable
 fun HomePage(
     modifier: Modifier = Modifier,
-    onStartQuiz: (moduleId: Int) -> Unit = {}
+    onStartQuiz: (moduleId: Int) -> Unit = {},
+    completedModuleId: Int? = null,               // <- id que llega al volver del quiz
+    onCompletedConsumed: () -> Unit = {}          // <- para limpiar el id una vez aplicado
 ) {
     val scroll = rememberScrollState()
+
+    // Estado de módulos (persistente mientras viva esta composición)
+    val modules = remember {
+        mutableStateListOf(
+            Module(1, ModuleState.AVAILABLE),
+            Module(2, ModuleState.LOCKED),
+            Module(3, ModuleState.LOCKED),
+            Module(4, ModuleState.LOCKED),
+            Module(5, ModuleState.LOCKED),
+        )
+    }
+
+    // Si regresaste del quiz con un módulo completado, aplícalo aquí.
+    LaunchedEffect(completedModuleId) {
+        val id = completedModuleId ?: return@LaunchedEffect
+        val idx = modules.indexOfFirst { it.id == id }
+        if (idx != -1) {
+            if (modules[idx].state == ModuleState.AVAILABLE) {
+                modules[idx] = modules[idx].copy(state = ModuleState.DONE)
+                if (idx + 1 < modules.size && modules[idx + 1].state == ModuleState.LOCKED) {
+                    modules[idx + 1] = modules[idx + 1].copy(state = ModuleState.AVAILABLE)
+                }
+            }
+        }
+        onCompletedConsumed()
+    }
+
+    // progreso dinámico — memorizado
+    val doneCount by remember(modules) {
+        derivedStateOf { modules.count { it.state == ModuleState.DONE } }
+    }
+    val progressPct by remember(doneCount, modules.size) {
+        derivedStateOf {
+            if (modules.isEmpty()) 0 else (doneCount * 100f / modules.size).roundToInt()
+        }
+    }
+
+    fun handleTapModule(id: Int) {
+        // Ya NO marcamos como DONE aquí
+        onStartQuiz(id)
+    }
 
     Scaffold(
         containerColor = PageBg,
@@ -340,29 +305,30 @@ fun HomePage(
         ) {
             Spacer(Modifier.height(8.dp))
             PracticeCard(
-                onPracticeClick = { onStartQuiz(1) }
+                onPracticeClick = { handleTapModule(1) }
             )
 
             Spacer(Modifier.height(8.dp))
 
-            val done = remember { mutableStateOf(0) }
-            val total = 5
             CourseBanner(
-                title = "Introducción al las Matematicas",
-                progressPct = (done.value.toFloat() / total * 100).roundToInt()
+                title = "Introducción a las Matemáticas",
+                progressPct = progressPct
             )
 
             Spacer(Modifier.height(8.dp))
 
             RoadMapSection(
-                modifier = Modifier.height(660.dp),
-                onStartQuiz = onStartQuiz
+                modules = modules,
+                onTapModule = ::handleTapModule,
+                modifier = Modifier.height(660.dp)
             )
 
             Spacer(Modifier.height(96.dp))
         }
     }
 }
+
+/* ---------------- BANNER Y PROGRESO ---------------- */
 
 @Composable
 private fun CourseBanner(title: String, progressPct: Int) {
@@ -410,6 +376,8 @@ private fun ProgressDonut(progressPct: Int) {
     }
 }
 
+/* ---------------- CARD PRÁCTICA ---------------- */
+
 @Composable
 fun PracticeCard(
     title: String = "Práctica para: Examen Final de Matemáticas",
@@ -421,7 +389,7 @@ fun PracticeCard(
             .padding(horizontal = 12.dp)
             .fillMaxWidth(),
         shape = RoundedCornerShape(22.dp),
-        color = Color(0xFFE6FAFB), // o Aqua.copy(alpha = 0.20f)
+        color = Color(0xFFE6FAFB),
         shadowElevation = 2.dp
     ) {
         Column(

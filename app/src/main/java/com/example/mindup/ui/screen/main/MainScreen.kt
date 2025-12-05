@@ -22,7 +22,7 @@ import com.example.mindup.ui.screen.pages.NotificationPage
 import com.example.mindup.ui.screen.pages.PlanDetailPage
 import com.example.mindup.ui.screen.pages.PracticePage
 import com.example.mindup.ui.screen.pages.ProfileNav
-import com.example.mindup.ui.screen.pages.QuizPage   // ⬅️ importa tu Quiz
+import com.example.mindup.ui.screen.pages.QuizPage
 
 private val PageBg  = Color(0xFFFFFFFF)
 private val Primary = Color(0xFF2B9FD6)

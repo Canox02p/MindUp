@@ -161,7 +161,7 @@ fun RegisterScreen(
                     value = ui.password,
                     onValueChange = viewModel::onPasswordChange,
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color(0xFF6B7280)) },
-                    label = { Text("Password") },
+                    label = { Text("contraseña (min. 6)") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .defaultMinSize(minHeight = 64.dp),
@@ -190,7 +190,7 @@ fun RegisterScreen(
                     value = ui.confirmPassword,
                     onValueChange = viewModel::onConfirmPasswordChange,
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color(0xFF6B7280)) },
-                    label = { Text("Confirm Password") },
+                    label = { Text("Confirmar contraceña") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .defaultMinSize(minHeight = 64.dp),

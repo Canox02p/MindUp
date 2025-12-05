@@ -24,7 +24,7 @@ private val Primary = Color(0xFF1EC6D7)
 @Composable
 fun QuizPage(
     modifier: Modifier = Modifier,
-    onConfirmHome: () -> Unit = {} // 🔹 callback que regresa al Home
+    onConfirmHome: () -> Unit = {}
 ) {
     var selected by remember { mutableStateOf<Int?>(null) }
 
@@ -50,8 +50,6 @@ fun QuizPage(
                 color = Primary,
                 trackColor = Color(0xFFE7ECF5)
             )
-
-            // ===== Título y descripción =====
             Text(
                 "Nivel 1: Fundamentos del Desarrollo Web",
                 color = Navy,
@@ -114,7 +112,7 @@ fun QuizPage(
 
             // ===== Botón CONFIRMAR =====
             Button(
-                onClick = { onConfirmHome() }, // 🔹 Regresa al Home
+                onClick = { onConfirmHome() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
