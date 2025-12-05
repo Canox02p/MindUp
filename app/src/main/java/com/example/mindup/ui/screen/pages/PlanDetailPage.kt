@@ -26,7 +26,7 @@ import com.example.mindup.R
 private val Muted = Color(0xFF7E8CA0)
 private val SoftBorder = Color(0xFFE7ECF5)
 private val SoftTeal = Color(0xFFDBF6FF)
-private val ContentBg = Color(0xFFEFF6FF)
+private val ContentBg = Color(0xFFEFF6FF) // Fondo azul muy clarito por defecto
 
 // Colores específicos
 private val BrandBlue = Color(0xFF0288D1)
@@ -49,7 +49,7 @@ fun PlanDetailPage(
     Scaffold(
         containerColor = Color.White,
         contentWindowInsets = WindowInsets(0),
-        topBar = { }
+        topBar = { /* sin AppBar */ }
     ) { inner ->
         LazyColumn(
             modifier = Modifier
@@ -113,7 +113,7 @@ fun PlanDetailPage(
 
             item {
                 RouteCard(
-                    title = "MAÑANA: Repaso ",
+                    title = "MAÑANA: Repaso",
                     bg = Color(0xFFF7F9FC),
                     border = SoftBorder,
                     buttonText = "Ver detalle",
@@ -124,6 +124,8 @@ fun PlanDetailPage(
 
             // ======= 4. CONTENIDO PERSONAL =======
             item { SectionHeader("Mi Contenido Personal") }
+
+            // Elemento 1: Banco de Preguntas
             item {
                 SimpleIconCard(
                     iconRes = R.drawable.base,
@@ -134,19 +136,23 @@ fun PlanDetailPage(
                 )
             }
 
+            // Elemento 2: Agregar nueva pregunta (Botón Interactivo)
             item {
+                // Creamos la interacción
                 val interactionSource = remember { MutableInteractionSource() }
                 val isPressed by interactionSource.collectIsPressedAsState()
+
+                // Animamos el color: Si se presiona es Cyan, si no, es el fondo suave
                 val animatedColor by animateColorAsState(
                     targetValue = if (isPressed) PressedCyan else ContentBg,
                     label = "colorAnim"
                 )
 
                 Surface(
-                    onClick = onPremium,
+                    onClick = onPremium, // Tu acción aquí
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
-                    color = animatedColor,
+                    color = animatedColor, // Usamos el color animado
                     interactionSource = interactionSource,
                     shadowElevation = 0.dp
                 ) {
@@ -156,18 +162,19 @@ fun PlanDetailPage(
                             .padding(vertical = 16.dp, horizontal = 20.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // Icono ic_add (círculo con más)
                         Icon(
                             painter = painterResource(id = R.drawable.ic_add),
                             contentDescription = null,
                             modifier = Modifier.size(24.dp),
-                            tint = Color.Black
+                            tint = Color.Black // Icono negro
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                         Text(
                             text = "Agrega una nueva pregunta",
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = Color.Black
+                                color = Color.Black // Texto siempre negro
                             )
                         )
                     }
@@ -185,6 +192,9 @@ fun PlanDetailPage(
     }
 }
 
+/* --------------------------------------------------------- */
+/* COMPONENTES REUTILIZABLES               */
+/* --------------------------------------------------------- */
 
 @Composable
 fun StatusInfoCard(
