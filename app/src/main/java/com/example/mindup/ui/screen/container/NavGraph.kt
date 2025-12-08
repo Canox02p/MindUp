@@ -17,6 +17,7 @@ import com.example.mindup.data.repository.UserRepository
 import com.example.mindup.ui.screen.login.LoginScreen
 import com.example.mindup.ui.screen.login.LoginViewModel
 import com.example.mindup.ui.screen.main.MainScreen
+import com.example.mindup.ui.screen.main.MainViewModel // 👈 Importamos el nuevo ViewModel
 import com.example.mindup.ui.screen.recover.RecoverScreen
 import com.example.mindup.ui.screen.register.RegisterScreen
 import com.example.mindup.ui.screen.register.RegisterViewModel
@@ -27,24 +28,38 @@ import kotlinx.coroutines.launch
 fun NavGraph() {
     val navController = rememberNavController()
     val context = LocalContext.current
+
+    // Inicializamos dependencias
     val prefs = remember { UserPrefs(context) }
     val repo = remember { UserRepository(prefs) }
     val scope = rememberCoroutineScope()
 
+    // 1. LOGIN ViewModel (Conectado a Prefs)
     val loginVm: LoginViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return LoginViewModel(repo, prefs) as T
+                return LoginViewModel(prefs) as T
             }
         }
     )
 
+    // 2. REGISTER ViewModel (Conectado a Repo - si no lo has cambiado)
     val registerVm: RegisterViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return RegisterViewModel(repo) as T
+            }
+        }
+    )
+
+    // 👇 3. MAIN ViewModel (¡NUEVO! Conectado a Prefs para sacar el Token)
+    val mainVm: MainViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return MainViewModel(prefs) as T
             }
         }
     )
@@ -100,13 +115,18 @@ fun NavGraph() {
         }
 
         composable("main") {
+            // 👇 Aquí le pasamos el mainVm a la pantalla principal
             MainScreen(
+                viewModel = mainVm, // <-- ¡Importante! Asegúrate que MainScreen reciba esto
                 onLogout = {
                     navController.navigate("login") {
                         popUpTo(0)
                         launchSingleTop = true
                     }
-                    scope.launch { prefs.setLoggedIn(false) }
+                    scope.launch {
+                        prefs.setLoggedIn(false)
+                        prefs.clearAccount()
+                    }
                 }
             )
         }

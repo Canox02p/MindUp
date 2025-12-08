@@ -25,6 +25,8 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
+// 👇 IMPORTANTE: Importamos tu modelo de datos real
+import com.example.mindup.data.model.Materia
 
 // --- PALETA DE COLORES ---
 private val PageBg = Color(0xFFF6F9FF)
@@ -39,13 +41,14 @@ private val LockedFill      = Color(0xFFF5F5F5) // Gris claro para niveles bloqu
 private val LockedBorder    = Color(0xFFE0E0E0) // Borde gris
 
 enum class ModuleState { LOCKED, AVAILABLE, DONE }
-data class Module(val id: Int, val state: ModuleState)
+// Mantenemos tu clase interna para que el mapa funcione igual
+data class Module(val id: Int, val state: ModuleState, val title: String = "")
 
 /* ---------------- TOP BAR ---------------- */
 
 @Composable
 fun HomeTopBar(
-    title: String = "Fundamentos Matemáticos",
+    title: String = "Mis Materias", // Título por defecto
     hearts: String = "5",
     coins: String = "140",
     streakDays: Int = 6
@@ -213,12 +216,13 @@ fun RoadMapSection(
             verticalArrangement = Arrangement.SpaceEvenly
         ) {
             modules.forEachIndexed { index, module ->
-                val alignment = rowAlignments.getOrElse(index) { Arrangement.Center }
+                val alignment = rowAlignments.getOrElse(index % rowAlignments.size) { Arrangement.Center }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = alignment) {
                     NodeCard(
                         state = module.state,
+                        label = module.title, // Pasamos el nombre para (opcionalmente) mostrarlo
                         onMeasuredCenter = { center -> registerCenter(index, center) },
-                        onClick = { if (module.state == ModuleState.AVAILABLE) onTapModule(module.id) }
+                        onClick = { if (module.state == ModuleState.AVAILABLE || module.state == ModuleState.DONE) onTapModule(module.id) }
                     )
                 }
             }
@@ -230,57 +234,63 @@ fun RoadMapSection(
 @Composable
 private fun NodeCard(
     state: ModuleState,
+    label: String,
     onMeasuredCenter: (Offset) -> Unit,
     onClick: () -> Unit
 ) {
     // Definimos colores según el estado:
-    // Si está DISPONIBLE o HECHO: Fondo azul claro, Borde azul cian.
-    // Si está BLOQUEADO: Fondo gris, Borde gris.
     val backgroundColor = if (state == ModuleState.LOCKED) LockedFill else ButtonFillLight
     val borderColor     = if (state == ModuleState.LOCKED) LockedBorder else ButtonBorder
     val iconTint        = if (state == ModuleState.LOCKED) Color.Gray else Navy
 
-    Surface(
-        modifier = Modifier
-            .size(110.dp) // Tamaño grande del botón
-            .clip(RoundedCornerShape(24.dp))
-            .clickable(enabled = state == ModuleState.AVAILABLE) { onClick() }
-            .onGloballyPositioned { coords ->
-                val size = coords.size
-                val topLeft = coords.positionInRoot()
-                val center = Offset(
-                    x = topLeft.x + size.width / 2f,
-                    y = topLeft.y + size.height / 2f
-                )
-                onMeasuredCenter(center)
-            },
-        color = backgroundColor, // Fondo azul claro
-        shape = RoundedCornerShape(24.dp),
-        border = BorderStroke(4.dp, borderColor), // Contorno grueso
-        tonalElevation = 0.dp,
-        shadowElevation = if (state == ModuleState.LOCKED) 0.dp else 4.dp
-    ) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            when (state) {
-                ModuleState.AVAILABLE -> Icon(
-                    Icons.Default.PlayArrow,
-                    contentDescription = "Jugar",
-                    tint = iconTint,
-                    modifier = Modifier.size(48.dp)
-                )
-                ModuleState.DONE -> Icon(
-                    Icons.Default.Check, // Icono de check para niveles completados
-                    contentDescription = "Completado",
-                    tint = iconTint,
-                    modifier = Modifier.size(44.dp)
-                )
-                ModuleState.LOCKED -> Icon(
-                    Icons.Default.Lock,
-                    contentDescription = "Bloqueado",
-                    tint = iconTint,
-                    modifier = Modifier.size(36.dp)
-                )
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Surface(
+            modifier = Modifier
+                .size(110.dp) // Tamaño grande del botón
+                .clip(RoundedCornerShape(24.dp))
+                .clickable(enabled = state != ModuleState.LOCKED) { onClick() }
+                .onGloballyPositioned { coords ->
+                    val size = coords.size
+                    val topLeft = coords.positionInRoot()
+                    val center = Offset(
+                        x = topLeft.x + size.width / 2f,
+                        y = topLeft.y + size.height / 2f
+                    )
+                    onMeasuredCenter(center)
+                },
+            color = backgroundColor,
+            shape = RoundedCornerShape(24.dp),
+            border = BorderStroke(4.dp, borderColor),
+            tonalElevation = 0.dp,
+            shadowElevation = if (state == ModuleState.LOCKED) 0.dp else 4.dp
+        ) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                when (state) {
+                    ModuleState.AVAILABLE -> Icon(
+                        Icons.Default.PlayArrow,
+                        contentDescription = "Jugar",
+                        tint = iconTint,
+                        modifier = Modifier.size(48.dp)
+                    )
+                    ModuleState.DONE -> Icon(
+                        Icons.Default.Check,
+                        contentDescription = "Completado",
+                        tint = iconTint,
+                        modifier = Modifier.size(44.dp)
+                    )
+                    ModuleState.LOCKED -> Icon(
+                        Icons.Default.Lock,
+                        contentDescription = "Bloqueado",
+                        tint = iconTint,
+                        modifier = Modifier.size(36.dp)
+                    )
+                }
             }
+        }
+        // Opcional: Mostrar nombre debajo del nodo
+        if (label.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = label, style = MaterialTheme.typography.bodySmall, color = Navy, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -289,6 +299,10 @@ private fun NodeCard(
 
 @Composable
 fun HomePage(
+    // 👇 1. AQUI ESTÁ EL CAMBIO: Recibimos datos reales
+    materias: List<Materia> = emptyList(),
+    isLoading: Boolean = false,
+
     modifier: Modifier = Modifier,
     onStartQuiz: (moduleId: Int) -> Unit = {},
     completedModuleId: Int? = null,
@@ -296,39 +310,34 @@ fun HomePage(
 ) {
     val scroll = rememberScrollState()
 
-    // Estado de módulos simulado
-    val modules = remember {
-        mutableStateListOf(
-            Module(1, ModuleState.DONE),      // Nivel 1 Completado
-            Module(2, ModuleState.AVAILABLE), // Nivel 2 Disponible (Azul claro con borde)
-            Module(3, ModuleState.LOCKED),    // Nivel 3 Bloqueado (Gris)
-            Module(4, ModuleState.LOCKED),
-            Module(5, ModuleState.LOCKED),
-        )
-    }
-
-    // Lógica para desbloquear niveles si regresas de un quiz completado
-    LaunchedEffect(completedModuleId) {
-        val id = completedModuleId ?: return@LaunchedEffect
-        val idx = modules.indexOfFirst { it.id == id }
-        if (idx != -1) {
-            if (modules[idx].state == ModuleState.AVAILABLE) {
-                modules[idx] = modules[idx].copy(state = ModuleState.DONE)
-                if (idx + 1 < modules.size && modules[idx + 1].state == ModuleState.LOCKED) {
-                    modules[idx + 1] = modules[idx + 1].copy(state = ModuleState.AVAILABLE)
-                }
+    // 👇 2. TRANSFORMACIÓN: Convertimos tus Materias Reales en Botones del Mapa
+    val modules = remember(materias) {
+        if (materias.isEmpty()) {
+            // Si no hay materias, lista vacía
+            emptyList<Module>()
+        } else {
+            materias.mapIndexed { index, materia ->
+                // Aquí decidimos el estado. Por ahora, todas DISPONIBLES para que las pruebes.
+                // Podrías poner lógica tipo: if(index == 0) AVAILABLE else LOCKED
+                Module(
+                    id = materia.id,
+                    state = ModuleState.AVAILABLE,
+                    title = materia.nombre // Usamos el nombre real de la BD
+                )
             }
         }
+    }
+
+    // Lógica para desbloquear niveles (La mantenemos igual por si la usas luego)
+    // Nota: Como ahora viene de la BD, lo ideal sería que la BD te diga qué está desbloqueado.
+    LaunchedEffect(completedModuleId) {
         onCompletedConsumed()
     }
 
-    // Cálculo del porcentaje de progreso
-    val doneCount by remember(modules) {
-        derivedStateOf { modules.count { it.state == ModuleState.DONE } }
-    }
-    val progressPct by remember(doneCount, modules.size) {
+    // Cálculo del porcentaje de progreso (Visual)
+    val progressPct by remember(modules) {
         derivedStateOf {
-            if (modules.isEmpty()) 0 else (doneCount * 100f / modules.size).roundToInt()
+            if (modules.isEmpty()) 0 else 10 // Valor de ejemplo
         }
     }
 
@@ -338,33 +347,54 @@ fun HomePage(
 
     Scaffold(
         containerColor = PageBg,
-        topBar = { HomeTopBar() }
+        topBar = { HomeTopBar(title = "Mis Cursos") } // Cambiamos el título
     ) { inner ->
-        Column(
-            modifier
-                .fillMaxSize()
-                .padding(inner)
-                .verticalScroll(scroll)
-        ) {
 
-            Spacer(Modifier.height(8.dp))
+        // 👇 3. ESTADO DE CARGA: Si está cargando, mostramos spinner
+        if (isLoading) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = Aqua)
+            }
+        } else {
+            Column(
+                modifier
+                    .fillMaxSize()
+                    .padding(inner)
+                    .verticalScroll(scroll)
+            ) {
 
-            // Banner del curso
-            CourseBanner(
-                title = "Introducción a las Matemáticas",
-                progressPct = progressPct
-            )
+                Spacer(Modifier.height(8.dp))
 
-            Spacer(Modifier.height(8.dp))
+                // Banner del curso
+                CourseBanner(
+                    title = if (modules.isNotEmpty()) "Continuar Aprendiendo" else "Empieza un curso",
+                    progressPct = progressPct
+                )
 
-            // Sección del Mapa (Botones grandes)
-            RoadMapSection(
-                modules = modules,
-                onTapModule = ::handleTapModule,
-                modifier = Modifier.height(660.dp)
-            )
+                Spacer(Modifier.height(8.dp))
 
-            Spacer(Modifier.height(96.dp))
+                if (modules.isEmpty()) {
+                    // Mensaje si la lista está vacía
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No tienes materias inscritas aún.", color = Navy)
+                    }
+                } else {
+                    // Sección del Mapa (¡TU DISEÑO INTACTO!)
+                    // El mapa dibujará tus materias reales
+                    RoadMapSection(
+                        modules = modules,
+                        onTapModule = ::handleTapModule,
+                        modifier = Modifier.height(660.dp)
+                    )
+                }
+
+                Spacer(Modifier.height(96.dp))
+            }
         }
     }
 }

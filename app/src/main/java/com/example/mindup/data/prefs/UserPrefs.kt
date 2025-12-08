@@ -1,7 +1,6 @@
 package com.example.mindup.data.prefs
 
 import android.content.Context
-import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -24,6 +23,8 @@ class UserPrefs(private val context: Context) {
         val ALIAS = stringPreferencesKey("alias")
         val EMAIL = stringPreferencesKey("email")
         val PASSWORD = stringPreferencesKey("password")
+        // 👇 1. NUEVA LLAVE PARA EL TOKEN
+        val AUTH_TOKEN = stringPreferencesKey("auth_token")
     }
 
     // Sesión
@@ -32,6 +33,15 @@ class UserPrefs(private val context: Context) {
 
     suspend fun setLoggedIn(value: Boolean) {
         context.dataStore.edit { it[Keys.LOGGED_IN] = value }
+    }
+
+    // 👇 2. LEER EL TOKEN (Para usarlo en las peticiones)
+    val authToken: Flow<String?> =
+        context.dataStore.data.map { it[Keys.AUTH_TOKEN] }
+
+    // 👇 3. GUARDAR EL TOKEN (Lo usaremos al hacer Login)
+    suspend fun saveAuthToken(token: String) {
+        context.dataStore.edit { it[Keys.AUTH_TOKEN] = token }
     }
 
     // Cuenta
@@ -57,6 +67,8 @@ class UserPrefs(private val context: Context) {
             it.remove(Keys.ALIAS)
             it.remove(Keys.EMAIL)
             it.remove(Keys.PASSWORD)
+            // 👇 4. BORRAR TOKEN AL SALIR
+            it.remove(Keys.AUTH_TOKEN)
             it[Keys.LOGGED_IN] = false
         }
     }

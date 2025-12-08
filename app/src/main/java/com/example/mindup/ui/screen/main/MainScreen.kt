@@ -31,8 +31,12 @@ private val Navy    = Color(0xFF1B1F23)
 
 @Composable
 fun MainScreen(
+    viewModel: MainViewModel, // 1. AGREGAMOS ESTO
     onLogout: () -> Unit
 ) {
+    // 2. LEEMOS LOS DATOS REALES DEL VIEWMODEL
+    val uiState by viewModel.ui.collectAsState()
+
     var selectedIndex by rememberSaveable { mutableStateOf(0) }
     var quizFromHomeModuleId by rememberSaveable { mutableStateOf<Int?>(null) }
 
@@ -84,19 +88,19 @@ fun MainScreen(
         Box(Modifier.padding(inner)) {
             when (selectedIndex) {
                 0 -> {
-                    // Si hay módulo seleccionado desde Home -
                     val pending = quizFromHomeModuleId
                     if (pending != null) {
                         QuizPage(
                             onConfirmHome = {
-                                // Regresar a Home (lista) al confirmar
                                 quizFromHomeModuleId = null
                                 selectedIndex = 0
                             }
                         )
                     } else {
-                        // Pasamos el callback al primer botón/nodo de Home
+                        // 3. PASAMOS LA LISTA REAL A HOMEPAGE
                         HomePage(
+                            materias = uiState.materias, // <--- AQUÍ PASAN TUS MATERIAS REALES
+                            isLoading = uiState.isLoading,
                             onStartQuiz = { moduleId ->
                                 quizFromHomeModuleId = moduleId
                             }
