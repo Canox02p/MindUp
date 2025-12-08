@@ -7,7 +7,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.mindup.ui.screen.main.BicolorTitle
 import com.example.mindup.ui.viewmodel.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,7 +40,14 @@ fun ProfileEditPage(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Editar perfil") },
+                title = {
+                    // 👇 Usamos el mismo estilo bonito del header principal
+                    BicolorTitle(
+                        text = "Editar perfil",
+                        size = 24,
+                        weight = FontWeight.W600
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(

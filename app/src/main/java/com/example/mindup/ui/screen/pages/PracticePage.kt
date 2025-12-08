@@ -89,7 +89,6 @@ fun PracticePage(
 
             Spacer(Modifier.height(16.dp))
 
-            // ==== Botón principal ====
             Button(
                 onClick = onFreePractice,
                 modifier = Modifier

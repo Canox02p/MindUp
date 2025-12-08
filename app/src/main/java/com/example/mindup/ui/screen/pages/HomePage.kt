@@ -335,7 +335,6 @@ fun RoadMapSection(
             }
         }
 
-        // COLUMNA DE BOTONES (NODOS)
         Column(
             Modifier
                 .matchParentSize()
@@ -347,7 +346,7 @@ fun RoadMapSection(
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = alignment) {
                     NodeCard(
                         state = module.state,
-                        label = module.title, // Pasamos el nombre para (opcionalmente) mostrarlo
+                        label = module.title,
                         onMeasuredCenter = { center -> registerCenter(index, center) },
                         onClick = { if (module.state == ModuleState.AVAILABLE || module.state == ModuleState.DONE) onTapModule(module.id) }
                     )
@@ -357,7 +356,6 @@ fun RoadMapSection(
     }
 }
 
-/* ---------------- NODECARD (DISEÑO ACTUALIZADO) ---------------- */
 @Composable
 private fun NodeCard(
     state: ModuleState,

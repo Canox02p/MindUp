@@ -40,44 +40,53 @@ fun MainScreen(
     var selectedIndex by rememberSaveable { mutableStateOf(0) }
     var quizFromHomeModuleId by rememberSaveable { mutableStateOf<Int?>(null) }
 
+    // 👇 NUEVO: estado para saber si estamos dentro del quiz de "Práctica Libre"
+    var showPracticeQuiz by rememberSaveable { mutableStateOf(false) }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = PageBg,
-        topBar = { HeaderTitleBar(selectedIndex) },
+        // Ocultamos el header cuando estamos en PERFIL (index 3)
+        topBar = {
+            if (selectedIndex != 3) {
+                HeaderTitleBar(selectedIndex)
+            }
+        },
         bottomBar = {
             NavigationBar(
-                containerColor = Color(0xFFE6F4FF), // un fondo suave tipo la captura
-                tonalElevation = 0.dp
+                containerColor = Color.White,
+                tonalElevation = 8.dp
             ) {
+                // Solo 4 items: sin Alertas aquí
                 val items = listOf(
-                    R.drawable.home      to "Inicio",
-                    R.drawable.contenido to "Contenido",
-                    R.drawable.practica  to "Práctica",
-                    R.drawable.perfil    to "Perfil"
+                    R.drawable.home       to "Inicio",
+                    R.drawable.contenido  to "Contenido",
+                    R.drawable.practica   to "Práctica",
+                    R.drawable.perfil     to "Perfil"
                 )
 
                 items.forEachIndexed { i, (iconRes, label) ->
                     val selected = selectedIndex == i
+                    val iconSize = if (label == "Contenido") 52.dp else 45.dp
+
                     NavigationBarItem(
                         selected = selected,
                         onClick = {
                             selectedIndex = i
+                            // limpiamos estado del quiz de Home
                             if (i != 0) quizFromHomeModuleId = null
+                            // limpiamos quiz de práctica si salimos de esa pestaña
+                            if (i != 2) showPracticeQuiz = false
                         },
                         icon = {
                             Icon(
                                 painter = painterResource(id = iconRes),
                                 contentDescription = label,
-                                modifier = Modifier.size(40.dp),
+                                modifier = Modifier.size(iconSize),
                                 tint = if (selected) Primary else Muted
                             )
                         },
-                        label = {
-                            Text(
-                                label,
-                                fontSize = 16.sp
-                            )
-                        },
+                        label = { Text(label) },
                         colors = NavigationBarItemDefaults.colors(
                             indicatorColor = Color.Transparent,
                             selectedIconColor = Primary,
@@ -112,8 +121,27 @@ fun MainScreen(
                         )
                     }
                 }
+
                 1 -> PlanDetailPage()
-                2 -> PracticePage()
+
+                2 -> {
+                    // 👇 Aquí conectamos "Comenzar Práctica Libre" con QuizPage
+                    if (showPracticeQuiz) {
+                        QuizPage(
+                            onConfirmHome = {
+                                // al confirmar, regresamos a la pantalla de práctica
+                                showPracticeQuiz = false
+                            }
+                        )
+                    } else {
+                        PracticePage(
+                            onFreePractice = {
+                                showPracticeQuiz = true
+                            }
+                        )
+                    }
+                }
+
                 3 -> ProfileNav(onLogout)
             }
         }
@@ -134,8 +162,7 @@ private fun HeaderTitleBar(selectedIndex: Int) {
                 0 -> "MindUp"
                 1 -> "Contenido"
                 2 -> "Práctica"
-                3 -> "Perfil"
-                else -> "MindUp"
+                else -> "Perfil"
             }
             BicolorTitle(titleText)
 
@@ -153,29 +180,13 @@ private fun HeaderTitleBar(selectedIndex: Int) {
 }
 
 @Composable
-private fun BicolorTitle(
-    text: String,
-    size: Int = 28,
-    weight: FontWeight = FontWeight.W700
-) {
+fun BicolorTitle(text: String, size: Int = 28, weight: FontWeight = FontWeight.W700) {
     val first = text.firstOrNull()?.toString().orEmpty()
     val rest  = if (text.length > 1) text.drop(1) else ""
     Text(
         buildAnnotatedString {
-            withStyle(
-                SpanStyle(
-                    color = Navy,
-                    fontSize = size.sp,
-                    fontWeight = weight
-                )
-            ) { append(first) }
-            withStyle(
-                SpanStyle(
-                    color = Primary,
-                    fontSize = size.sp,
-                    fontWeight = weight
-                )
-            ) { append(rest) }
+            withStyle(SpanStyle(color = Navy,   fontSize = size.sp, fontWeight = weight)) { append(first) }
+            withStyle(SpanStyle(color = Primary, fontSize = size.sp, fontWeight = weight)) { append(rest) }
         }
     )
 }

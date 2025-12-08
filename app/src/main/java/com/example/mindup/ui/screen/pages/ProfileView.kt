@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mindup.R
+import com.example.mindup.ui.screen.main.BicolorTitle
 import com.example.mindup.ui.viewmodel.ProfileViewModel
 
 /* ===== Paleta ===== */
@@ -33,7 +34,7 @@ private val Muted = Color(0xFF7E8CA0)
 private val CardBg = Color.White
 private val Soft = Color(0xFFF2F6FC)
 private val SoftBorder = Color(0xFFE7ECF5)
-private val TealPromo = Color(0xFF2196F3)
+private val TealPromo = Color(0xFF2B9FD6)
 private val StreakBg = Color(0xFFFFE4D6)
 private val StreakText = Color(0xFFB85B2A)
 
@@ -50,7 +51,7 @@ fun ProfileView(
     onHelp: () -> Unit = {},
     onBadges: () -> Unit = {},
     onContrib: () -> Unit = {},
-    onAlerts: () -> Unit = {}            // 👈 NUEVO CALLBACK
+    onAlerts: () -> Unit = {}
 ) {
 
     val name by viewModel.name.collectAsState(initial = "Héctor")
@@ -61,8 +62,17 @@ fun ProfileView(
             .fillMaxSize()
             .background(Soft)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .padding(horizontal = 12.dp,)
     ) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(bottom = 0.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            BicolorTitle("Perfil")
+        }
 
         /* =================== ENCABEZADO =================== */
         Surface(
@@ -170,8 +180,6 @@ fun ProfileView(
         Spacer(Modifier.height(12.dp))
         ActionRow(text = "Mis Contribuciones", onClick = onContrib)
         Spacer(Modifier.height(12.dp))
-
-        // 🔔 NUEVO BOTÓN "ALERTAS" BAJO MIS CONTRIBUCIONES
         ActionRowWithIcon(
             text = "Alertas",
             icon = {
@@ -186,7 +194,6 @@ fun ProfileView(
 
         Spacer(Modifier.height(10.dp))
 
-        /* =================== PROMO =================== */
         Surface(
             color = TealPromo,
             shape = RoundedCornerShape(16.dp),

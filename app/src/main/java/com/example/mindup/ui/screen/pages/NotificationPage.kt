@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material3.*
@@ -16,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.mindup.ui.screen.main.BicolorTitle
 import kotlinx.coroutines.launch
 
 private val Muted = Color(0xFF7E8CA0)
@@ -37,7 +39,8 @@ fun NotificationPage(
         Reminder("4", "Revisa tus fichas de Química", 35),
     ),
     onConfigure: (Reminder) -> Unit = {},
-    onSnooze: (Reminder) -> Unit = {}
+    onSnooze: (Reminder) -> Unit = {},
+    onBack: () -> Unit = {}          // 👈 NUEVO
 ) {
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -59,13 +62,28 @@ fun NotificationPage(
                     )
                 )
         ) {
+
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .padding(start = GUTTER, end = GUTTER, top = 10.dp, bottom = 6.dp)
+                    .padding(start = GUTTER, end = GUTTER, top = 10.dp, bottom = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Volver"
+                    )
+                }
+                Spacer(Modifier.width(8.dp))
 
+                BicolorTitle(
+                    text = "Alertas",
+                    size = 24,
+                    weight = FontWeight.W600
+                )
             }
+
 
             // --- Lista de recordatorios ---
             LazyColumn(

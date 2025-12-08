@@ -39,7 +39,9 @@ fun ProfileNav(
             )
         }
         composable("profile/alerts") {
-            NotificationPage()
+            NotificationPage(
+                onBack = { nav.popBackStack() }
+            )
         }
     }
 }
