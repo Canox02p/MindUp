@@ -28,7 +28,8 @@ fun ProfileNav(
             ProfileView(
                 viewModel = profileVm,
                 onEdit = { nav.navigate("profile/edit") },
-                onLogout = onLogout
+                onLogout = onLogout,
+                onAlerts = { nav.navigate("profile/alerts") }
             )
         }
         composable("profile/edit") {
@@ -36,6 +37,9 @@ fun ProfileNav(
                 viewModel = profileVm,
                 onBack = { nav.popBackStack() }
             )
+        }
+        composable("profile/alerts") {
+            NotificationPage()
         }
     }
 }

@@ -3,6 +3,7 @@ package com.example.mindup.data.prefs
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -23,11 +24,14 @@ class UserPrefs(private val context: Context) {
         val ALIAS = stringPreferencesKey("alias")
         val EMAIL = stringPreferencesKey("email")
         val PASSWORD = stringPreferencesKey("password")
-        // 👇 1. NUEVA LLAVE PARA EL TOKEN
         val AUTH_TOKEN = stringPreferencesKey("auth_token")
+
+        // 🔹 NUEVOS CAMPOS PARA LA MATERIA SELECCIONADA
+        val SELECTED_MATERIA_NAME = stringPreferencesKey("selected_materia_name")
+        val SELECTED_MATERIA_ID   = intPreferencesKey("selected_materia_id")
     }
 
-    // Sesión
+    // ====== Sesión ======
     val isLoggedIn: Flow<Boolean> =
         context.dataStore.data.map { it[Keys.LOGGED_IN] ?: false }
 
@@ -35,16 +39,15 @@ class UserPrefs(private val context: Context) {
         context.dataStore.edit { it[Keys.LOGGED_IN] = value }
     }
 
-    // 👇 2. LEER EL TOKEN (Para usarlo en las peticiones)
+    // Token
     val authToken: Flow<String?> =
         context.dataStore.data.map { it[Keys.AUTH_TOKEN] }
 
-    // 👇 3. GUARDAR EL TOKEN (Lo usaremos al hacer Login)
     suspend fun saveAuthToken(token: String) {
         context.dataStore.edit { it[Keys.AUTH_TOKEN] = token }
     }
 
-    // Cuenta
+    // ====== Cuenta ======
     val account: Flow<AccountPrefs> =
         context.dataStore.data.map {
             AccountPrefs(
@@ -62,13 +65,37 @@ class UserPrefs(private val context: Context) {
         }
     }
 
+    // ====== MATERIA SELECCIONADA ======
+
+    // Nombre (para el título "Mis Cursos" / "Álgebra", etc.)
+    val selectedMateriaName: Flow<String> =
+        context.dataStore.data.map { prefs ->
+            prefs[Keys.SELECTED_MATERIA_NAME] ?: "Mis Cursos"
+        }
+
+    // ID (si luego lo necesitas para llamadas a la API)
+    val selectedMateriaId: Flow<Int?> =
+        context.dataStore.data.map { prefs ->
+            prefs[Keys.SELECTED_MATERIA_ID]
+        }
+
+    suspend fun saveSelectedMateria(nombre: String, id: Int) {
+        context.dataStore.edit {
+            it[Keys.SELECTED_MATERIA_NAME] = nombre
+            it[Keys.SELECTED_MATERIA_ID] = id
+        }
+    }
+
     suspend fun clearAccount() {
         context.dataStore.edit {
             it.remove(Keys.ALIAS)
             it.remove(Keys.EMAIL)
             it.remove(Keys.PASSWORD)
-            // 👇 4. BORRAR TOKEN AL SALIR
             it.remove(Keys.AUTH_TOKEN)
+
+            it.remove(Keys.SELECTED_MATERIA_NAME)
+            it.remove(Keys.SELECTED_MATERIA_ID)
+
             it[Keys.LOGGED_IN] = false
         }
     }

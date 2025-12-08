@@ -1,5 +1,6 @@
 package com.example.mindup.ui.screen.pages
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -24,9 +25,10 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import kotlin.math.roundToInt
-// 👇 IMPORTANTE: Importamos tu modelo de datos real
 import com.example.mindup.data.model.Materia
+import com.example.mindup.data.prefs.UserPrefs
+import com.example.mindup.ui.components.MateriaMenuList
+import kotlinx.coroutines.launch
 
 // --- PALETA DE COLORES ---
 private val PageBg = Color(0xFFF6F9FF)
@@ -34,21 +36,22 @@ private val CardBg = Color.White
 private val Navy   = Color(0xFF22264C)
 private val Aqua   = Color(0xFF03A9F4)
 
-// Colores nuevos para los botones del mapa (Estilo solicitado)
-private val ButtonFillLight = Color(0xFFE1F5FE) // Azul muy claro (fondo)
-private val ButtonBorder    = Color(0xFF4FC3F7) // Azul cian (contorno)
-private val LockedFill      = Color(0xFFF5F5F5) // Gris claro para niveles bloqueados
-private val LockedBorder    = Color(0xFFE0E0E0) // Borde gris
+private val ButtonFillLight = Color(0xFFE1F5FE)
+private val ButtonBorder    = Color(0xFF4FC3F7)
+private val LockedFill      = Color(0xFFF5F5F5)
+private val LockedBorder    = Color(0xFFE0E0E0)
 
 enum class ModuleState { LOCKED, AVAILABLE, DONE }
-// Mantenemos tu clase interna para que el mapa funcione igual
 data class Module(val id: Int, val state: ModuleState, val title: String = "")
 
-/* ---------------- TOP BAR ---------------- */
+/* ---------------------------------------------------------
+   TOP BAR MODIFICADO (CON MENÚ HAMBURGUESA Y TÍTULO DINÁMICO)
+--------------------------------------------------------- */
 
 @Composable
 fun HomeTopBar(
-    title: String = "Mis Materias", // Título por defecto
+    title: String,
+    onMenuClick: () -> Unit,
     hearts: String = "5",
     coins: String = "140",
     streakDays: Int = 6
@@ -74,6 +77,8 @@ fun HomeTopBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
+
+                // ❤️ Vidas
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Favorite,
@@ -82,8 +87,10 @@ fun HomeTopBar(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(Modifier.width(6.dp))
-                    Text(hearts, color = Navy, style = MaterialTheme.typography.bodyMedium)
+                    Text(hearts, color = Navy)
                 }
+
+                // 💎 Diamantes
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Diamond,
@@ -92,8 +99,10 @@ fun HomeTopBar(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(Modifier.width(6.dp))
-                    Text(coins, color = Navy, style = MaterialTheme.typography.bodyMedium)
+                    Text(coins, color = Navy)
                 }
+
+                // 🔥 Racha
                 Surface(
                     color = Color(0xFFFFE0B2).copy(alpha = 0.6f),
                     shape = RoundedCornerShape(50)
@@ -109,39 +118,157 @@ fun HomeTopBar(
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(Modifier.width(6.dp))
-                        Text(
-                            "Racha: $streakDays Días",
-                            color = Color(0xFFFF5722),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium
-                        )
+                        Text("Racha: $streakDays Días", color = Color(0xFFFF5722))
                     }
                 }
             }
         }
+
         Spacer(Modifier.height(10.dp))
+
+        // TITULO + MENÚ HAMBURGUESA (AQUÍ VA EL CAMBIO IMPORTANTE)
         Row(
             Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Surface(shape = RoundedCornerShape(14.dp), color = CardBg, shadowElevation = 1.dp) {
+
+            Surface(
+                shape = RoundedCornerShape(14.dp),
+                color = CardBg,
+                shadowElevation = 1.dp,
+                modifier = Modifier.clickable { onMenuClick() }
+            ) {
                 Icon(
                     Icons.Default.Menu,
-                    contentDescription = null,
+                    contentDescription = "Menu",
                     tint = Navy,
-                    modifier = Modifier
-                        .size(44.dp)
-                        .padding(10.dp)
+                    modifier = Modifier.size(44.dp).padding(10.dp)
                 )
             }
+
             Text(title, color = Navy, style = MaterialTheme.typography.titleLarge)
+
             Spacer(Modifier.size(44.dp))
         }
     }
 }
 
-/* ---------------- ROADMAP (SECCIÓN DEL MAPA) ---------------- */
+/* ------------------------------------------------------------------
+   AQUÍ EMPIEZA TU PANTALLA PRINCIPAL CON MAPA + MENÚ + TÍTULO DINÁMICO
+------------------------------------------------------------------- */
+
+@Composable
+fun HomePage(
+    materias: List<Materia>,
+    prefs: UserPrefs,
+    isLoading: Boolean = false,
+    modifier: Modifier = Modifier,
+    onStartQuiz: (Int) -> Unit = {},
+    completedModuleId: Int? = null,
+    onCompletedConsumed: () -> Unit = {}
+) {
+    val scroll = rememberScrollState()
+    val scope = rememberCoroutineScope()
+
+    // 🔶 Leer materia seleccionada desde DataStore
+    val savedMateriaName by prefs.selectedMateriaName.collectAsState(initial = "Mis Cursos")
+
+    // 🔶 Estado interno del título
+    var title by remember { mutableStateOf(savedMateriaName) }
+
+    // 🔶 Estado del menú
+    var showMenu by remember { mutableStateOf(false) }
+
+    // 🔶 Convertir materias reales en nodos del mapa
+    val modules = remember(materias) {
+        materias.map { materia ->
+            Module(id = materia.id, state = ModuleState.AVAILABLE, title = materia.nombre)
+        }
+    }
+
+    LaunchedEffect(completedModuleId) { onCompletedConsumed() }
+
+    Scaffold(
+        containerColor = PageBg,
+        topBar = {
+            HomeTopBar(
+                title = title,
+                onMenuClick = { showMenu = !showMenu }
+            )
+        }
+    ) { inner ->
+
+        /* ============ MENÚ DESPLEGABLE ============ */
+        AnimatedVisibility(showMenu) {
+            MateriaMenuList(
+                materias = materias,
+                onMateriaSelected = { materia ->
+
+                    title = materia.nombre
+                    showMenu = false
+
+                    // Guardar selección
+                    scope.launch {
+                        prefs.saveSelectedMateria(materia.nombre, materia.id)
+                    }
+                }
+            )
+        }
+
+        /* ============ CONTENIDO PRINCIPAL ============ */
+        if (isLoading) {
+            Box(
+                Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = Aqua)
+            }
+        } else {
+            Column(
+                modifier
+                    .fillMaxSize()
+                    .padding(inner)
+                    .verticalScroll(scroll)
+            ) {
+
+                Spacer(Modifier.height(8.dp))
+
+                val progressPct = (modules.size * 10).coerceAtMost(100)
+
+                CourseBanner(
+                    title = "Continuar Aprendiendo",
+                    progressPct = progressPct
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                if (modules.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No tienes materias inscritas aún.", color = Navy)
+                    }
+                } else {
+                    RoadMapSection(
+                        modules = modules,
+                        onTapModule = { onStartQuiz(it) },
+                        modifier = Modifier.height(660.dp)
+                    )
+                }
+
+                Spacer(Modifier.height(96.dp))
+            }
+        }
+    }
+}
+
+/* TODO LO DEMÁS SE QUEDA IGUAL (RoadMapSection, NodeCard, Banner, Donut)
+   YA VIENE COMPLETO EN TU MISMO ARCHIVO ORIGINAL
+*/
 
 @Composable
 fun RoadMapSection(
@@ -294,112 +421,6 @@ private fun NodeCard(
         }
     }
 }
-
-/* ---------------- PANTALLA PRINCIPAL (HOME PAGE) ---------------- */
-
-@Composable
-fun HomePage(
-    // 👇 1. AQUI ESTÁ EL CAMBIO: Recibimos datos reales
-    materias: List<Materia> = emptyList(),
-    isLoading: Boolean = false,
-
-    modifier: Modifier = Modifier,
-    onStartQuiz: (moduleId: Int) -> Unit = {},
-    completedModuleId: Int? = null,
-    onCompletedConsumed: () -> Unit = {}
-) {
-    val scroll = rememberScrollState()
-
-    // 👇 2. TRANSFORMACIÓN: Convertimos tus Materias Reales en Botones del Mapa
-    val modules = remember(materias) {
-        if (materias.isEmpty()) {
-            // Si no hay materias, lista vacía
-            emptyList<Module>()
-        } else {
-            materias.mapIndexed { index, materia ->
-                // Aquí decidimos el estado. Por ahora, todas DISPONIBLES para que las pruebes.
-                // Podrías poner lógica tipo: if(index == 0) AVAILABLE else LOCKED
-                Module(
-                    id = materia.id,
-                    state = ModuleState.AVAILABLE,
-                    title = materia.nombre // Usamos el nombre real de la BD
-                )
-            }
-        }
-    }
-
-    // Lógica para desbloquear niveles (La mantenemos igual por si la usas luego)
-    // Nota: Como ahora viene de la BD, lo ideal sería que la BD te diga qué está desbloqueado.
-    LaunchedEffect(completedModuleId) {
-        onCompletedConsumed()
-    }
-
-    // Cálculo del porcentaje de progreso (Visual)
-    val progressPct by remember(modules) {
-        derivedStateOf {
-            if (modules.isEmpty()) 0 else 10 // Valor de ejemplo
-        }
-    }
-
-    fun handleTapModule(id: Int) {
-        onStartQuiz(id)
-    }
-
-    Scaffold(
-        containerColor = PageBg,
-        topBar = { HomeTopBar(title = "Mis Cursos") } // Cambiamos el título
-    ) { inner ->
-
-        // 👇 3. ESTADO DE CARGA: Si está cargando, mostramos spinner
-        if (isLoading) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Aqua)
-            }
-        } else {
-            Column(
-                modifier
-                    .fillMaxSize()
-                    .padding(inner)
-                    .verticalScroll(scroll)
-            ) {
-
-                Spacer(Modifier.height(8.dp))
-
-                // Banner del curso
-                CourseBanner(
-                    title = if (modules.isNotEmpty()) "Continuar Aprendiendo" else "Empieza un curso",
-                    progressPct = progressPct
-                )
-
-                Spacer(Modifier.height(8.dp))
-
-                if (modules.isEmpty()) {
-                    // Mensaje si la lista está vacía
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(300.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("No tienes materias inscritas aún.", color = Navy)
-                    }
-                } else {
-                    // Sección del Mapa (¡TU DISEÑO INTACTO!)
-                    // El mapa dibujará tus materias reales
-                    RoadMapSection(
-                        modules = modules,
-                        onTapModule = ::handleTapModule,
-                        modifier = Modifier.height(660.dp)
-                    )
-                }
-
-                Spacer(Modifier.height(96.dp))
-            }
-        }
-    }
-}
-
-/* ---------------- BANNER Y DONA DE PROGRESO ---------------- */
 
 @Composable
 private fun CourseBanner(title: String, progressPct: Int) {

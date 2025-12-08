@@ -47,6 +47,7 @@ android {
 }
 
 dependencies {
+    implementation("io.coil-kt:coil-compose:2.6.0")
     // --- Compose BOM (solo una vez) ---
 
     implementation(platform(libs.androidx.compose.bom))

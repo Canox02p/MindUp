@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,7 +33,7 @@ private val Muted = Color(0xFF7E8CA0)
 private val CardBg = Color.White
 private val Soft = Color(0xFFF2F6FC)
 private val SoftBorder = Color(0xFFE7ECF5)
-private val TealPromo = Color(0xFF1EC6D7)
+private val TealPromo = Color(0xFF2196F3)
 private val StreakBg = Color(0xFFFFE4D6)
 private val StreakText = Color(0xFFB85B2A)
 
@@ -48,7 +49,8 @@ fun ProfileView(
     onLogout: () -> Unit = {},
     onHelp: () -> Unit = {},
     onBadges: () -> Unit = {},
-    onContrib: () -> Unit = {}
+    onContrib: () -> Unit = {},
+    onAlerts: () -> Unit = {}            // 👈 NUEVO CALLBACK
 ) {
 
     val name by viewModel.name.collectAsState(initial = "Héctor")
@@ -70,7 +72,6 @@ fun ProfileView(
         ) {
             Box(Modifier.fillMaxWidth()) {
 
-                /* ✅ Contenido del header sin espacio extra */
                 Column(
                     Modifier
                         .fillMaxWidth()
@@ -168,6 +169,21 @@ fun ProfileView(
         ActionRow(text = "Logros e Insignias", onClick = onBadges)
         Spacer(Modifier.height(12.dp))
         ActionRow(text = "Mis Contribuciones", onClick = onContrib)
+        Spacer(Modifier.height(12.dp))
+
+        // 🔔 NUEVO BOTÓN "ALERTAS" BAJO MIS CONTRIBUCIONES
+        ActionRowWithIcon(
+            text = "Alertas",
+            icon = {
+                Icon(
+                    imageVector = Icons.Filled.Notifications,
+                    contentDescription = "Alertas",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            onClick = onAlerts
+        )
+
         Spacer(Modifier.height(10.dp))
 
         /* =================== PROMO =================== */
@@ -297,6 +313,32 @@ private fun ActionRow(text: String, onClick: () -> Unit) {
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Text(text, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.weight(1f))
+            Text("›", color = Muted, fontSize = 22.sp)
+        }
+    }
+}
+
+/* 👉 NUEVA VARIANTE CON ÍCONO INICIAL (USADA PARA ALERTAS) */
+@Composable
+private fun ActionRowWithIcon(
+    text: String,
+    icon: @Composable () -> Unit,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = Color(0xFFE9EFF6),
+        shape = RoundedCornerShape(14.dp)
+    ) {
+        Row(
+            Modifier.fillMaxWidth().clickable { onClick() }
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            icon()
+            Spacer(Modifier.width(10.dp))
             Text(text, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.weight(1f))
             Text("›", color = Muted, fontSize = 22.sp)

@@ -17,8 +17,8 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.mindup.R
+import com.example.mindup.data.prefs.UserPrefs
 import com.example.mindup.ui.screen.pages.HomePage
-import com.example.mindup.ui.screen.pages.NotificationPage
 import com.example.mindup.ui.screen.pages.PlanDetailPage
 import com.example.mindup.ui.screen.pages.PracticePage
 import com.example.mindup.ui.screen.pages.ProfileNav
@@ -31,10 +31,10 @@ private val Navy    = Color(0xFF1B1F23)
 
 @Composable
 fun MainScreen(
-    viewModel: MainViewModel, // 1. AGREGAMOS ESTO
+    viewModel: MainViewModel,
+    prefs: UserPrefs,
     onLogout: () -> Unit
 ) {
-    // 2. LEEMOS LOS DATOS REALES DEL VIEWMODEL
     val uiState by viewModel.ui.collectAsState()
 
     var selectedIndex by rememberSaveable { mutableStateOf(0) }
@@ -46,16 +46,16 @@ fun MainScreen(
         topBar = { HeaderTitleBar(selectedIndex) },
         bottomBar = {
             NavigationBar(
-                containerColor = Color.White,
-                tonalElevation = 8.dp
+                containerColor = Color(0xFFE6F4FF), // un fondo suave tipo la captura
+                tonalElevation = 0.dp
             ) {
                 val items = listOf(
-                    R.drawable.home       to "Inicio",
-                    R.drawable.contenido  to "Contenido",
-                    R.drawable.practica   to "Práctica",
-                    R.drawable.alerta     to "Alertas",
-                    R.drawable.perfil     to "Perfil"
+                    R.drawable.home      to "Inicio",
+                    R.drawable.contenido to "Contenido",
+                    R.drawable.practica  to "Práctica",
+                    R.drawable.perfil    to "Perfil"
                 )
+
                 items.forEachIndexed { i, (iconRes, label) ->
                     val selected = selectedIndex == i
                     NavigationBarItem(
@@ -68,13 +68,18 @@ fun MainScreen(
                             Icon(
                                 painter = painterResource(id = iconRes),
                                 contentDescription = label,
-                                modifier = Modifier.size(45.dp),
+                                modifier = Modifier.size(40.dp),
                                 tint = if (selected) Primary else Muted
                             )
                         },
-                        label = { Text(label) },
+                        label = {
+                            Text(
+                                label,
+                                fontSize = 16.sp
+                            )
+                        },
                         colors = NavigationBarItemDefaults.colors(
-                            indicatorColor = Primary.copy(alpha = 0.15f),
+                            indicatorColor = Color.Transparent,
                             selectedIconColor = Primary,
                             selectedTextColor = Primary,
                             unselectedIconColor = Muted,
@@ -97,9 +102,9 @@ fun MainScreen(
                             }
                         )
                     } else {
-                        // 3. PASAMOS LA LISTA REAL A HOMEPAGE
                         HomePage(
-                            materias = uiState.materias, // <--- AQUÍ PASAN TUS MATERIAS REALES
+                            materias = uiState.materias,
+                            prefs = prefs,
                             isLoading = uiState.isLoading,
                             onStartQuiz = { moduleId ->
                                 quizFromHomeModuleId = moduleId
@@ -109,8 +114,7 @@ fun MainScreen(
                 }
                 1 -> PlanDetailPage()
                 2 -> PracticePage()
-                3 -> NotificationPage()
-                4 -> ProfileNav(onLogout)
+                3 -> ProfileNav(onLogout)
             }
         }
     }
@@ -130,8 +134,8 @@ private fun HeaderTitleBar(selectedIndex: Int) {
                 0 -> "MindUp"
                 1 -> "Contenido"
                 2 -> "Práctica"
-                3 -> "Alertas"
-                else -> "Perfil"
+                3 -> "Perfil"
+                else -> "MindUp"
             }
             BicolorTitle(titleText)
 
@@ -149,13 +153,29 @@ private fun HeaderTitleBar(selectedIndex: Int) {
 }
 
 @Composable
-private fun BicolorTitle(text: String, size: Int = 28, weight: FontWeight = FontWeight.W700) {
+private fun BicolorTitle(
+    text: String,
+    size: Int = 28,
+    weight: FontWeight = FontWeight.W700
+) {
     val first = text.firstOrNull()?.toString().orEmpty()
     val rest  = if (text.length > 1) text.drop(1) else ""
     Text(
         buildAnnotatedString {
-            withStyle(SpanStyle(color = Navy,   fontSize = size.sp, fontWeight = weight)) { append(first) }
-            withStyle(SpanStyle(color = Primary, fontSize = size.sp, fontWeight = weight)) { append(rest) }
+            withStyle(
+                SpanStyle(
+                    color = Navy,
+                    fontSize = size.sp,
+                    fontWeight = weight
+                )
+            ) { append(first) }
+            withStyle(
+                SpanStyle(
+                    color = Primary,
+                    fontSize = size.sp,
+                    fontWeight = weight
+                )
+            ) { append(rest) }
         }
     )
 }

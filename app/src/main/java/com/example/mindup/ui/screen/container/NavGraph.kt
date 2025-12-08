@@ -1,10 +1,6 @@
 package com.example.mindup.ui.screen.container
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -12,12 +8,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.mindup.data.model.Materia
 import com.example.mindup.data.prefs.UserPrefs
 import com.example.mindup.data.repository.UserRepository
 import com.example.mindup.ui.screen.login.LoginScreen
 import com.example.mindup.ui.screen.login.LoginViewModel
 import com.example.mindup.ui.screen.main.MainScreen
-import com.example.mindup.ui.screen.main.MainViewModel // 👈 Importamos el nuevo ViewModel
+import com.example.mindup.ui.screen.main.MainViewModel
+import com.example.mindup.ui.screen.pages.SelectMateriaPage
 import com.example.mindup.ui.screen.recover.RecoverScreen
 import com.example.mindup.ui.screen.register.RegisterScreen
 import com.example.mindup.ui.screen.register.RegisterViewModel
@@ -26,78 +24,82 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun NavGraph() {
+
     val navController = rememberNavController()
     val context = LocalContext.current
 
-    // Inicializamos dependencias
     val prefs = remember { UserPrefs(context) }
     val repo = remember { UserRepository(prefs) }
     val scope = rememberCoroutineScope()
 
-    // 1. LOGIN ViewModel (Conectado a Prefs)
-    val loginVm: LoginViewModel = viewModel(
-        factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return LoginViewModel(prefs) as T
-            }
+    /* =================== LOGIN VIEWMODEL =================== */
+    val loginVm: LoginViewModel = viewModel(factory = object : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return LoginViewModel(prefs) as T
         }
-    )
+    })
 
-    // 2. REGISTER ViewModel (Conectado a Repo - si no lo has cambiado)
-    val registerVm: RegisterViewModel = viewModel(
-        factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return RegisterViewModel(repo) as T
-            }
+    /* ================= REGISTER VIEWMODEL ================== */
+    val registerVm: RegisterViewModel = viewModel(factory = object : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return RegisterViewModel(repo) as T
         }
-    )
+    })
 
-    // 👇 3. MAIN ViewModel (¡NUEVO! Conectado a Prefs para sacar el Token)
-    val mainVm: MainViewModel = viewModel(
-        factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return MainViewModel(prefs) as T
-            }
+    /* ================== MAIN VIEWMODEL ================== */
+    val mainVm: MainViewModel = viewModel(factory = object : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return MainViewModel(prefs) as T
         }
-    )
+    })
 
     val logged by prefs.isLoggedIn.collectAsState(initial = false)
+    val selectedMateriaName by prefs.selectedMateriaName.collectAsState(initial = "Mis Cursos")
 
-    NavHost(navController = navController, startDestination = "splash") {
+    /* ================== RUTAS ================== */
+    NavHost(
+        navController = navController,
+        startDestination = "splash"
+    ) {
 
+        /* -------- SPLASH -------- */
         composable("splash") {
             SplashVideoScreen {
-                navController.navigate(if (logged) "main" else "login") {
+                val next = when {
+                    !logged -> "login"
+                    logged && selectedMateriaName == "Mis Cursos" -> "selectMateria"
+                    else -> "main"
+                }
+                navController.navigate(next) {
                     popUpTo(0)
                     launchSingleTop = true
                 }
             }
         }
 
+        /* -------- LOGIN -------- */
         composable("login") {
             LoginScreen(
                 viewModel = loginVm,
                 onLoginOk = {
                     scope.launch { prefs.setLoggedIn(true) }
-                    navController.navigate("main") {
+                    navController.navigate("selectMateria") {
                         popUpTo(0)
                         launchSingleTop = true
                     }
                 },
-                onGoRegister = { navController.navigate("register") { launchSingleTop = true } },
-                onForgotPassword = { navController.navigate("recover") { launchSingleTop = true } }
+                onGoRegister = { navController.navigate("register") },
+                onForgotPassword = { navController.navigate("recover") }
             )
         }
 
+        /* -------- REGISTER -------- */
         composable("register") {
             RegisterScreen(
                 viewModel = registerVm,
                 onRegisterSuccess = {
                     scope.launch { prefs.setLoggedIn(true) }
-                    navController.navigate("main") {
+                    navController.navigate("selectMateria") {
                         popUpTo(0)
                         launchSingleTop = true
                     }
@@ -106,6 +108,7 @@ fun NavGraph() {
             )
         }
 
+        /* -------- RECOVER -------- */
         composable("recover") {
             RecoverScreen(
                 repo = repo,
@@ -114,18 +117,40 @@ fun NavGraph() {
             )
         }
 
-        composable("main") {
-            // 👇 Aquí le pasamos el mainVm a la pantalla principal
-            MainScreen(
-                viewModel = mainVm, // <-- ¡Importante! Asegúrate que MainScreen reciba esto
-                onLogout = {
-                    navController.navigate("login") {
+        /* -------- SELECT MATERIA -------- */
+        composable("selectMateria") {
+
+            val materiasDemo = listOf(
+                Materia(1, "Álgebra Básica", "Conceptos esenciales"),
+                Materia(2, "Geometría", "Figuras y áreas"),
+                Materia(3, "Cálculo Introductorio", "Límites y derivadas"),
+                Materia(4, "Estadística", "Probabilidad y datos")
+            )
+
+            SelectMateriaPage(
+                materias = materiasDemo,
+                onMateriaSelected = { materia ->
+                    scope.launch {
+                        prefs.saveSelectedMateria(materia.nombre, materia.id)
+                    }
+                    navController.navigate("main") {
                         popUpTo(0)
                         launchSingleTop = true
                     }
-                    scope.launch {
-                        prefs.setLoggedIn(false)
-                        prefs.clearAccount()
+                }
+            )
+        }
+
+        /* -------- MAIN -------- */
+        composable("main") {
+            MainScreen(
+                viewModel = mainVm,
+                prefs = prefs,          // 👈 IMPORTANTE: pasamos prefs al Home
+                onLogout = {
+                    scope.launch { prefs.clearAccount() }
+                    navController.navigate("login") {
+                        popUpTo(0)
+                        launchSingleTop = true
                     }
                 }
             )
