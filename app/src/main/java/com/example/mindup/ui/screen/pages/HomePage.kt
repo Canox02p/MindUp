@@ -30,7 +30,6 @@ import com.example.mindup.data.prefs.UserPrefs
 import com.example.mindup.ui.components.MateriaMenuList
 import kotlinx.coroutines.launch
 
-// --- PALETA DE COLORES ---
 private val PageBg = Color(0xFFF6F9FF)
 private val CardBg = Color.White
 private val Navy   = Color(0xFF22264C)
@@ -465,5 +464,84 @@ private fun ProgressDonut(progressPct: Int) {
             )
         }
         Text("$progressPct%", color = Navy, fontWeight = FontWeight.Bold)
+    }
+}
+@Composable
+fun MateriaMenuList(
+    materias: List<Materia>,
+    onMateriaSelected: (Materia) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(top = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Surface(
+            shape = RoundedCornerShape(28.dp),
+            color = PageBg.copy(alpha = 0.98f),
+            shadowElevation = 8.dp
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                materias.forEachIndexed { index, materia ->
+
+                    // Color de la tarjeta (puedes marcar una como seleccionada si quieres)
+                    val isHighlighted = index == 2 // Ejemplo: la tercera en azul
+                    val itemBg = if (isHighlighted) Color(0xFFE0F7FF) else CardBg
+
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                            .clip(RoundedCornerShape(24.dp))
+                            .clickable { onMateriaSelected(materia) },
+                        color = itemBg,
+                        shadowElevation = 0.dp
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            val icon = when {
+                                materia.nombre.contains("Base", ignoreCase = true) ->
+                                    Icons.Default.Home
+                                materia.nombre.contains("Soft", ignoreCase = true) ->
+                                    Icons.Default.Article
+                                materia.nombre.contains("Diseño", ignoreCase = true) ->
+                                    Icons.Default.TrackChanges
+                                materia.nombre.contains("Compu", ignoreCase = true) ->
+                                    Icons.Default.Notifications
+                                else -> Icons.Default.School
+                            }
+
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                tint = Navy,
+                                modifier = Modifier.size(22.dp)
+                            )
+
+                            Spacer(Modifier.width(12.dp))
+
+                            Text(
+                                text = materia.nombre,
+                                color = Navy,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }
