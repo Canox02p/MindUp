@@ -12,6 +12,7 @@ data class RegisterUiState(
     val email: String = "",
     val password: String = "",
     val confirmPassword: String = "",
+    // NOTA: Aunque no los mostremos en pantalla, el estado interno no estorba
     val isLoading: Boolean = false,
     val error: String? = null,
     val isValid: Boolean = false
@@ -24,6 +25,8 @@ class RegisterViewModel(
     private val _ui = MutableStateFlow(RegisterUiState())
     val ui: StateFlow<RegisterUiState> = _ui
 
+    // 👇 VALIDACIÓN CORREGIDA:
+    // Borramos la línea que revisaba el teléfono. Ahora solo revisamos los 3 campos visuales.
     private fun validate(
         username: String = _ui.value.username,
         email: String = _ui.value.email,
@@ -32,8 +35,10 @@ class RegisterViewModel(
     ): Boolean {
         val emailOk = email.contains("@") && email.contains(".")
         val passOk = password.length >= 6
-        val match = password == confirmPassword
+        val match = password == confirmPassword && password.isNotEmpty()
         val userOk = username.isNotBlank()
+
+        // ¡LISTO! Ya no dependemos de 'telefono' para activar el botón
         return emailOk && passOk && match && userOk
     }
 
@@ -60,13 +65,24 @@ class RegisterViewModel(
     fun register(onSuccess: () -> Unit) {
         val s = _ui.value
         if (!s.isValid) {
-            _ui.value = s.copy(error = "Revisa usuario, correo y contraseñas (mín. 6 y coinciden)")
+            _ui.value = s.copy(error = "Revisa los campos requeridos")
             return
         }
 
         viewModelScope.launch {
             _ui.value = s.copy(isLoading = true, error = null)
-            val res = repo.register(alias = s.username, email = s.email, password = s.password)
+
+            // 👇 TRUCO MÁGICO:
+            // Como tu servidor Laravel TODAVÍA espera un teléfono y descripción,
+            // se los enviamos "por debajo del agua" con datos falsos.
+            val res = repo.register(
+                name = s.username,
+                email = s.email,
+                password = s.password,
+                telefono = "0000000000",        // <--- Dato automático
+                descripcion = "Usuario App Móvil" // <--- Dato automático
+            )
+
             res.onSuccess {
                 _ui.value = _ui.value.copy(isLoading = false)
                 onSuccess()

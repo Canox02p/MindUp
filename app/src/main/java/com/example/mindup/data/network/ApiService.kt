@@ -3,8 +3,9 @@ package com.example.mindup.data.network
 import com.example.mindup.data.model.LoginRequest
 import com.example.mindup.data.model.LoginResponse
 import com.example.mindup.data.model.Materia // 👈 Importamos el molde nuevo
-
+import com.example.mindup.data.model.RegisterRequest
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -20,4 +21,6 @@ interface ApiService {
     // Fíjate que pedimos el "token" como parámetro para enviarlo en la cabecera
     @GET("mis-materias")
     fun getMisMaterias(@Header("Authorization") token: String): Call<List<Materia>>
+    @POST("register")
+    suspend fun registrarUsuario(@Body request: RegisterRequest): Response<Any>
 }

@@ -22,7 +22,6 @@ data class LoginUiState(
     val error: String? = null
 )
 
-// 👇 AHORA RECIBE "prefs" EN EL PARÉNTESIS
 class LoginViewModel(private val prefs: UserPrefs) : ViewModel() {
 
     private val _ui = MutableStateFlow(LoginUiState())

@@ -1,5 +1,6 @@
 package com.example.mindup.ui.screen.register
 
+import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,10 +32,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.mindup.R
+import androidx.compose.ui.text.style.TextAlign
+import com.example.mindup.ui.screen.register.RegisterViewModel
 
 private val SkyBlue = Color(0xFF87CEEB)
 private val CardBg = Color(0xFFFFFFFF)
 private val PageBg = Color(0xFFEFF7FD)
+private val ErrorRed = Color(0xFFD32F2F)
 
 @Composable
 fun RegisterScreen(
@@ -46,6 +50,12 @@ fun RegisterScreen(
     var showPassword by remember { mutableStateOf(false) }
     var showConfirmPassword by remember { mutableStateOf(false) }
     val pushDown = 80.dp
+
+    // 🔴 ERRORES (como en tu otro proyecto)
+    var usernameError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+    var confirmPasswordError by remember { mutableStateOf<String?>(null) }
 
     Box(
         modifier = Modifier
@@ -64,7 +74,7 @@ fun RegisterScreen(
                 .padding(vertical = 24.dp, horizontal = 20.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            // ======= Encabezado =======
+            // ======= Encabezado "MindUp" =======
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
@@ -118,106 +128,205 @@ fun RegisterScreen(
 
                 Spacer(Modifier.height(16.dp))
 
-                // ======= Campo usuario =======
-                OutlinedTextField(
-                    value = ui.username,
-                    onValueChange = viewModel::onUsernameChange,
-                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFF6B7280)) },
-                    label = { Text("Nombre de usuario") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .defaultMinSize(minHeight = 64.dp),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Next
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                )
-
-                Spacer(Modifier.height(12.dp))
-
-                // ======= Campo email =======
-                OutlinedTextField(
-                    value = ui.email,
-                    onValueChange = viewModel::onEmailChange,
-                    leadingIcon = { Icon(Icons.Default.MailOutline, contentDescription = null, tint = Color(0xFF6B7280)) },
-                    label = { Text("Email") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .defaultMinSize(minHeight = 64.dp),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Email,
-                        imeAction = ImeAction.Next
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                )
-
-                Spacer(Modifier.height(12.dp))
-
-                // ======= Campo password =======
-                OutlinedTextField(
-                    value = ui.password,
-                    onValueChange = viewModel::onPasswordChange,
-                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color(0xFF6B7280)) },
-                    label = { Text("contraseña (min. 6)") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .defaultMinSize(minHeight = 64.dp),
-                    singleLine = true,
-                    visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-                    trailingIcon = {
+                // ======= Nombre de usuario =======
+                Column {
+                    OutlinedTextField(
+                        value = ui.username,
+                        onValueChange = {
+                            viewModel.onUsernameChange(it)
+                            usernameError = validateUsername(it)
+                        },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = null,
+                                tint = Color(0xFF6B7280)
+                            )
+                        },
+                        label = { Text("Nombre de usuario") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .defaultMinSize(minHeight = 64.dp),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Next
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        isError = usernameError != null
+                    )
+                    if (usernameError != null) {
                         Text(
-                            if (showPassword) "Ocultar" else "Mostrar",
-                            color = SkyBlue,
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .clickable { showPassword = !showPassword }
+                            text = usernameError!!,
+                            color = ErrorRed,
+                            fontSize = 11.sp,
+                            modifier = Modifier.padding(top = 2.dp)
                         )
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Next
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                )
+                    }
+                }
 
                 Spacer(Modifier.height(12.dp))
 
-                // ======= Confirm password =======
-                OutlinedTextField(
-                    value = ui.confirmPassword,
-                    onValueChange = viewModel::onConfirmPasswordChange,
-                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color(0xFF6B7280)) },
-                    label = { Text("Confirmar contraceña") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .defaultMinSize(minHeight = 64.dp),
-                    singleLine = true,
-                    visualTransformation = if (showConfirmPassword) VisualTransformation.None else PasswordVisualTransformation(),
-                    trailingIcon = {
+                // ======= Email =======
+                Column {
+                    OutlinedTextField(
+                        value = ui.email,
+                        onValueChange = {
+                            viewModel.onEmailChange(it)
+                            emailError = validateEmail(it)
+                        },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.MailOutline,
+                                contentDescription = null,
+                                tint = Color(0xFF6B7280)
+                            )
+                        },
+                        label = { Text("Email") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .defaultMinSize(minHeight = 64.dp),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Email,
+                            imeAction = ImeAction.Next
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        isError = emailError != null
+                    )
+                    if (emailError != null) {
                         Text(
-                            if (showConfirmPassword) "Ocultar" else "Mostrar",
-                            color = SkyBlue,
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .clickable { showConfirmPassword = !showConfirmPassword }
+                            text = emailError!!,
+                            color = ErrorRed,
+                            fontSize = 11.sp,
+                            modifier = Modifier.padding(top = 2.dp)
                         )
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Done
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                )
+                    }
+                }
+
+                Spacer(Modifier.height(12.dp))
+
+                // ======= Password =======
+                Column {
+                    OutlinedTextField(
+                        value = ui.password,
+                        onValueChange = {
+                            viewModel.onPasswordChange(it)
+                            passwordError = validatePassword(it)
+                            // también revalidamos la confirmación
+                            confirmPasswordError = validateConfirmPassword(ui.confirmPassword, it)
+                        },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = Color(0xFF6B7280)
+                            )
+                        },
+                        label = { Text("Contraseña (min. 6)") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .defaultMinSize(minHeight = 64.dp),
+                        singleLine = true,
+                        visualTransformation = if (showPassword) VisualTransformation.None
+                        else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            Text(
+                                if (showPassword) "Ocultar" else "Mostrar",
+                                color = SkyBlue,
+                                modifier = Modifier
+                                    .padding(end = 8.dp)
+                                    .clickable { showPassword = !showPassword }
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Next
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        isError = passwordError != null
+                    )
+                    if (passwordError != null) {
+                        Text(
+                            text = passwordError!!,
+                            color = ErrorRed,
+                            fontSize = 11.sp,
+                            modifier = Modifier.padding(top = 2.dp)
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(12.dp))
+
+                // ======= Confirmar password =======
+                Column {
+                    OutlinedTextField(
+                        value = ui.confirmPassword,
+                        onValueChange = {
+                            viewModel.onConfirmPasswordChange(it)
+                            confirmPasswordError = validateConfirmPassword(it, ui.password)
+                        },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = Color(0xFF6B7280)
+                            )
+                        },
+                        label = { Text("Confirmar contraseña") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .defaultMinSize(minHeight = 64.dp),
+                        singleLine = true,
+                        visualTransformation = if (showConfirmPassword) VisualTransformation.None
+                        else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            Text(
+                                if (showConfirmPassword) "Ocultar" else "Mostrar",
+                                color = SkyBlue,
+                                modifier = Modifier
+                                    .padding(end = 8.dp)
+                                    .clickable { showConfirmPassword = !showConfirmPassword }
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Done
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        isError = confirmPasswordError != null
+                    )
+                    if (confirmPasswordError != null) {
+                        Text(
+                            text = confirmPasswordError!!,
+                            color = ErrorRed,
+                            fontSize = 11.sp,
+                            modifier = Modifier.padding(top = 2.dp)
+                        )
+                    }
+                }
 
                 Spacer(Modifier.height(20.dp))
 
                 // ======= Botón principal =======
                 Button(
-                    onClick = { viewModel.register(onRegisterSuccess) },
-                    enabled = ui.isValid && !ui.isLoading,
+                    onClick = {
+                        // Validar todo al presionar
+                        usernameError = validateUsername(ui.username)
+                        emailError = validateEmail(ui.email)
+                        passwordError = validatePassword(ui.password)
+                        confirmPasswordError = validateConfirmPassword(ui.confirmPassword, ui.password)
+
+                        if (
+                            usernameError == null &&
+                            emailError == null &&
+                            passwordError == null &&
+                            confirmPasswordError == null
+                        ) {
+                            viewModel.register(onRegisterSuccess)
+                        }
+                    },
+                    enabled = !ui.isLoading,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
@@ -234,7 +343,7 @@ fun RegisterScreen(
                         Spacer(Modifier.width(12.dp))
                         Text("Creando…", color = Color.White)
                     } else {
-                        Text("crear", color = Color.White, fontWeight = FontWeight.SemiBold)
+                        Text("Crear", color = Color.White, fontWeight = FontWeight.SemiBold)
                     }
                 }
 
@@ -246,12 +355,23 @@ fun RegisterScreen(
                 Spacer(Modifier.height(16.dp))
 
                 // ======= Texto inferior =======
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
                     val text = buildAnnotatedString {
-                        withStyle(SpanStyle(color = Color(0xFF6B7280))) { append("¿Ya tienes una cuenta? ") }
-                        withStyle(SpanStyle(color = SkyBlue, fontWeight = FontWeight.SemiBold)) { append("Inicia sesión aquí.") }
+                        withStyle(SpanStyle(color = Color(0xFF6B7280))) {
+                            append("¿Ya tienes una cuenta? ")
+                        }
+                        withStyle(SpanStyle(color = SkyBlue, fontWeight = FontWeight.SemiBold)) {
+                            append("Inicia sesión aquí.")
+                        }
                     }
-                    Text(text = text, modifier = Modifier.clickable { onGoLogin() })
+                    Text(
+                        text = text,
+                        modifier = Modifier.clickable { onGoLogin() },
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
         }
@@ -268,4 +388,31 @@ fun RegisterScreen(
                 .zIndex(2f)
         )
     }
+}
+
+/* ========= VALIDACIONES REUTILIZADAS ========= */
+
+private fun validateUsername(username: String): String? {
+    if (username.isBlank()) return "El nombre de usuario es requerido"
+    val regex = Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 ]+$")
+    if (!regex.matches(username)) return "Caracteres especiales no están permitidos"
+    return null
+}
+
+private fun validateEmail(email: String): String? {
+    if (email.isBlank()) return "El email es requerido"
+    if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) return "Email no válido"
+    return null
+}
+
+private fun validatePassword(password: String): String? {
+    if (password.isBlank()) return "La contraseña es requerida"
+    if (password.length < 6) return "Debe tener al menos 6 caracteres"
+    return null
+}
+
+private fun validateConfirmPassword(confirm: String, password: String): String? {
+    if (confirm.isBlank()) return "Confirma tu contraseña"
+    if (confirm != password) return "Las contraseñas no coinciden"
+    return null
 }
